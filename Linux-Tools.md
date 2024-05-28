@@ -14,3 +14,5 @@
    ```bash
    sudo apt install python3-httpx
    ```
+
+3. whatweb
