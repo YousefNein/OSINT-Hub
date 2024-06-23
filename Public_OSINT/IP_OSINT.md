@@ -1,6 +1,42 @@
-Whois Lookup, Domain Availability & IP Search - DomainTools - https://ip-api.com/
+## Linux
 
-Cisco Talos Intelligence Group - Comprehensive Threat Intelligence - https://talosintelligence.com/
+whois - Retrieves information about domain name registration and IP address allocation.
+```bash
+sudo apt install whois
+whois 8.8.8.8
+```
+
+curl - Get your public IP address with cURL.
+```bash
+sudo apt install curl
+curl ifconfig.io
+```
+
+nmap - Nmap scans for open ports and services on a network host.
+```bash
+sudo apt install nmap
+nmap 8.8.8.8
+```
+
+traceroute - Traces the path packets take to a network host.
+```bash
+sudo apt install traceroute
+traceroute 8.8.8.8
+```
+
+dig - A tool for DNS queries, providing more detailed information.
+```bash
+sudo apt install dnsutils
+dig -x 8.8.8.8
+```
+
+## Online
+
+Free IP Geolocation API lookup any IP address | IP API - https://ip-api.com/
+
+All information about IP address. Location, timezone, network | IPinfo - https://ipinfo.io/
+
+Cisco Talos Intelligence Group | Comprehensive Threat Intelligence - https://talosintelligence.com/
 
 Threat Analysis APIs for Threat Detection & Prevention | APIVoid - https://www.apivoid.com/
 
@@ -8,24 +44,26 @@ ThreatMiner.org | Data Mining for Threat Intelligence - https://www.threatminer.
 
 IBM X-Force Exchange - https://exchange.xforce.ibmcloud.com/
 
-Whois Lookup, Domain Availability & IP Search - DomainTools - https://whois.domaintools.com/
+Whois Lookup, Domain Availability & IP Search | DomainTools - https://whois.domaintools.com/
 
 Shodan Search Engine - https://www.shodan.io/
 
-DeHashed — #FreeThePassword - https://www.dehashed.com/login
+DeHashed - https://www.dehashed.com/login
 
-What Is My IP? Shows Your Public IP Address - IPv4 - IPv6 - https://www.whatismyip.com/
+Shows Your Public IP Address | What Is My IP? - https://www.whatismyip.com/
 
-VirusTotal - Home - https://www.virustotal.com/
+VirusTotal - https://www.virustotal.com/
 
-AlienVault - Open Threat Exchange - https://otx.alienvault.com/
+Open Threat Exchange | AlienVault - https://otx.alienvault.com/
 
-Intelligence Search - Maltiverse - https://maltiverse.com/intelligence/search
+Intelligence Search | Maltiverse - https://maltiverse.com/intelligence/search
 
 Web Check - https://web-check.xyz/
 
-ViewDNS.info - Your one source for DNS related tools! - https://viewdns.info/
+Your one source for DNS related tools! | ViewDNS.info - https://viewdns.info/
 
-Online investigation tool - Reverse IP, NS, MX, WHOIS and Search Tools - https://dnslytics.com/
+Reverse IP, NS, MX, WHOIS and Search Tools | Online investigation tool - https://dnslytics.com/
 
-SecurityTrails: Data Security, Threat Hunting, and Attack Surface Management Solutions for Security Teams - https://securitytrails.com/
+Data Security, Threat Hunting, and Attack Surface Management Solutions for Security Teams | SecurityTrails - https://securitytrails.com/
+
+Captures data on IPs that scan the internet and saturate security tools with internet noise | GreyNoise - https://www.greynoise.io/
