@@ -36,7 +36,7 @@ Free IP Geolocation API lookup any IP address | IP API - https://ip-api.com/
 
 All information about IP address. Location, timezone, network | IPinfo - https://ipinfo.io/
 
-Cisco Talos Intelligence Group | Comprehensive Threat Intelligence - https://talosintelligence.com/
+Cisco Talos Intelligence Group | Comprehensive Threat Intelligence - https://www.talosintelligence.com/reputation_center
 
 Threat Analysis APIs for Threat Detection & Prevention | APIVoid - https://www.apivoid.com/
 
@@ -47,6 +47,8 @@ IBM X-Force Exchange - https://exchange.xforce.ibmcloud.com/
 Whois Lookup, Domain Availability & IP Search | DomainTools - https://whois.domaintools.com/
 
 Shodan Search Engine - https://www.shodan.io/
+
+Censys.io - https://search.censys.io/
 
 DeHashed - https://www.dehashed.com/login
 
