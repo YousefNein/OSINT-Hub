@@ -5,15 +5,15 @@ import os
 import sys
 import json
 import re
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
-headers = {
-  "Accept-Encoding": "gzip, deflate",
-  'Accept': 'application/json',
-  "Key": os.environ.get("AIPDB_API")
-  }
+# token = os.environ.get("IP_INFO")
+
+# headers = {
+#     'Authorization':'Bearer ' + token
+# }
 
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
@@ -29,27 +29,13 @@ def filter_data(data):
     if data is None:
         return None
 
-    attributes = data.get("data", {})
-
     filtered_data = {
-        "IP": attributes.get('ipAddress'),
-        "Country": attributes.get('countryCode'),
-        "Usage Type": attributes.get('usageType'),
-        "ISP": attributes.get('isp'),
-        "Domain": attributes.get('domain'),
-        "Hostnames": attributes.get('hostnames', []),
-        "Confidence Score": attributes.get('abuseConfidenceScore'),
-        "Total Reports": attributes.get('totalReports'),
-        "Last Reported At": attributes.get('lastReportedAt')
+        "IP": data.get('ip'),
+        "AS Owner": data.get('org'),
+        "Country": data.get('country'),
+        "City": data.get('city'),
+        "Hostname": data.get('hostname')
     }
-
-    boolean_fields = [
-        "isWhitelisted", "isTor"
-    ]
-
-    for field in boolean_fields:
-        if attributes.get(field, False):
-            filtered_data[field] = True
     return filtered_data
 
 def parse_args(args):
@@ -78,13 +64,10 @@ try:
         print(f"{ip} is not a valid IPv4 address")
         sys.exit(1)
     
-    params = {
-        'ipAddress': ip,
-        'maxAgeInDays': '365'
-    }
-    url = "https://api.abuseipdb.com/api/v2/check"
+    url = f"https://api.threatminer.org/v2/host.php?q={ip}&rt=3"
 
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url=url)
+
     response.raise_for_status()
     parsed = json.loads(response.text)
 
@@ -93,6 +76,7 @@ try:
     else:
         filtered_response = filter_data(parsed)
         print(format_data(filtered_response))
+
     
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
