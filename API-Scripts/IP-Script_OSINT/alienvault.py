@@ -36,7 +36,7 @@ def filter_data(data):
     filtered_data = {
         "IP": data.get('indicator'),
         "Country": data.get("country_name"),
-        "AS Owner": data.get("asn"),
+        "AS Name": data.get("asn"),
         "Reputation": data.get("reputation"),
         "Related Pulses": data.get("pulse_info", {}).get("count", 0),
         "Tags Count": len(tags),

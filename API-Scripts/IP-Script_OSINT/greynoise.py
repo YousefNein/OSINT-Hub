@@ -9,15 +9,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-api_key = os.environ.get("MALTIVERSE")
-
-headers = { 
-    'Authorization':'Bearer ' + api_key 
+headers = {
+    'Accept': 'application/json',
+    "Key": os.environ.get("GREY_NOISE")
 }
 
-load_dotenv()
-
 def format_data(data):
+    # Custom formatting for CVE and tags
+    for key in ['cve', 'tags', 'CVE', 'Tags', 'User Agents', 'Target Countries']:
+        if key in data and isinstance(data[key], list):
+            data[key] = ','.join(data[key])
+
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
     return formatted_data
 
@@ -32,25 +34,39 @@ def filter_data(data):
         return None
 
     filtered_data = {
-        "IP" : data.get("ip_addr"),
-        "AS Name": data.get("registrant_name"),
-        "Country" : data.get("country_code"),
-        "City": data.get('city'),
-        "Network" : data.get("asn_cidr"),
-        "Classification": data.get("classification"),
-        "Creation Time": data.get("creation_time"),
+        "IP": data.get('ip'),
+        "Country": data.get('metadata', {}).get('country'),
+        "AS Name": data.get('metadata', {}).get('organization'),
+        "Category": data.get('metadata', {}).get('category'),
+        "Hostname": data.get('metadata', {}).get('rdns'),
+        "OS": data.get('metadata', {}).get('os'),
+        "First seen": data.get('first_seen'),
+        "Last seen": data.get('last_seen'),
+        "Actor": data.get('actor'),
+        "Classification": data.get('classification'),
+        "CVE": data.get('cve', []),
+        "Tags": data.get('tags', []),
+        "URI Paths": data.get('raw_data', {}).get('web',{}).get('paths', []),
+        "User Agents": data.get('raw_data', {}).get('web',{}).get('useragents', []),
+        "Target Countries": data.get('metadata', {}).get('destination_country_codes')
+        # "IP": data.get('ip'), # Uncomment for the community version
+        # "Noise": data.get('noise'),
+        # "Riot": data.get('riot'),
+        # "Classification": data.get('classification'),
+        # "Name": data.get('name'),
+        # "Link": data.get('link'),
+        # "Last seen": data.get('last_seen')
     }
-    
+
     boolean_fields = [
-        "is_cdn", "is_cnc", "is_distributing_malware", "is_hosting",
-        "is_iot_threat", "is_known_attacker", "is_known_scanner",
-        "is_mining_pool", "is_open_proxy", "is_sinkhole",
-        "is_tor_node", "is_vpn_node"
+        "spoofable", "bot", "vpn", "tor"
     ]
 
     for field in boolean_fields:
         if data.get(field, False):
             filtered_data[field] = True
+            if field == "vpn":
+                filtered_data["vpn_service"] = data.get("vpn_service", "N/A")
 
     return filtered_data
 
@@ -80,20 +96,19 @@ try:
         print(f"{ip} is not a valid IPv4 address")
         sys.exit(1)
     
-    url = f'https://api.maltiverse.com/ip/{ip}'
+    # url = f"https://api.greynoise.io/v3/community/{ip}" #Free version
+    url = f"https://api.greynoise.io/v2/noise/context/{ip}" # Enterprise API
 
     response = requests.get(url, headers=headers)
-
     response.raise_for_status()
     parsed = json.loads(response.text)
-    
-    
+
     if full_data:
         print(format_data(parsed))
     else:
         filtered_response = filter_data(parsed)
         print(format_data(filtered_response))
-
+    
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
 except requests.exceptions.RequestException as e:

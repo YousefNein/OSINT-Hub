@@ -86,3 +86,5 @@ except requests.exceptions.RequestException as e:
     # print(response.json())
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
+
+# To add later: https://cvedb.shodan.io/cve/CVE-2016-10087

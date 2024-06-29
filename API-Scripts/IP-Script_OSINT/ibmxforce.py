@@ -11,7 +11,7 @@ load_dotenv()
 
 headers_xf = {
     'accept': 'application/json',
-    'Authorization': "Basic NDFlNjA4MmMtZjMyMi00NjhiLWI2NjItYzgzMTg1YjNiYTJhOmQ4Y2JkNjg4LWJhYWItNDRiYi05ZTUxLTRkNTJkOWEzNjlkMQ=="
+    'Authorization': os.environ.get("IBM_XFORCE_API")
 }
 
 def format_data(data):

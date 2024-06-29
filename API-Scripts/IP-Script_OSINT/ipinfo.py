@@ -31,7 +31,7 @@ def filter_data(data):
 
     filtered_data = {
         "IP": data.get('ip'),
-        "AS Owner": data.get('org'),
+        "AS Name": data.get('org'),
         "Country": data.get('country'),
         "City": data.get('city'),
         "Hostname": data.get('hostname')

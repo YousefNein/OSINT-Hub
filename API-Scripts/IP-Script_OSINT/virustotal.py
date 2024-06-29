@@ -33,7 +33,7 @@ def filter_data(data):
 
     filtered_data = {
         "IP": data.get('data', {}).get('id'),
-        "AS Owner": attributes.get("as_owner"),
+        "AS Name": attributes.get("as_owner"),
         "Country": attributes.get("country"),
         "Network": attributes.get("network"),
         "Harmless": last_analysis_stats.get("harmless", 0),

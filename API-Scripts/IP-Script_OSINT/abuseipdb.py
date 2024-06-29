@@ -34,7 +34,7 @@ def filter_data(data):
     filtered_data = {
         "IP": attributes.get('ipAddress'),
         "Country": attributes.get('countryCode'),
-        "Usage Type": attributes.get('usageType'),
+        "Category": attributes.get('usageType'),
         "ISP": attributes.get('isp'),
         "Domain": attributes.get('domain'),
         "Hostnames": attributes.get('hostnames', []),
