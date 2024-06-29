@@ -1,9 +1,15 @@
 #!/bin/python3
 
 import requests
+import os
 import sys
-import json
 import re
+import json
+from dotenv import load_dotenv
+
+load_dotenv()
+
+api_key = os.environ.get("PROXY_CHECK")
 
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
@@ -19,46 +25,64 @@ def filter_data(data):
     if data is None:
         return None
 
+    keys = list(data.keys())
+    if len(keys) < 2:
+        return None
+    ip_key = keys[1]
+    ip_data = data.get(ip_key, {})
+
+    filtered_data = {
+        "IP": ip_key,
+        "Network": ip_data.get('range'),
+        "ISP": ip_data.get('provider'),
+        "Organisation": ip_data.get('organisation'),
+        "Country": ip_data.get('country'),
+        "City": ip_data.get('city'),
+        "Proxy": ip_data.get('proxy'),
+        "Type": ip_data.get('type'),
+        "Risk": ip_data.get('risk')
+    }
+
+    return filtered_data
+
 def parse_args(args):
     ip = None
-    rt = None
+    full_data = False
 
     for arg in args:
         if is_valid_ipv4(arg):
             ip = arg
-        elif arg.startswith('rt='):
-            rt = arg
+        elif arg == '-f':
+            full_data = True
         else:
             print(f"Error: Unknown flag {arg}")
             sys.exit(1)
     
-    return ip, rt
+    return ip, full_data
 
 try:
-    ip, rt = parse_args(sys.argv[1:])
+    ip, full_data = parse_args(sys.argv[1:])
 
     if not ip:
         ip = input("Enter your IP address here:\n")
-
-    if not rt:
-        rt = input("Enter the query type (rt=1 for WHOIS, rt=2 for Passive DNS, rt=3 for URIs, rt=4 for Related Samples, rt=5 for SSL Certificates, rt=6 for Report tagging):\n")
-        if not rt.startswith('rt='):
-            print(f"Error: Invalid query type {rt}")
-            sys.exit(1)
+        full_data = input("Do you want the full data to be shown? Y/n\n").lower() in ['y', 'yes', '']
 
     if not is_valid_ipv4(ip):
         print(f"{ip} is not a valid IPv4 address")
         sys.exit(1)
     
-    url = f"https://api.threatminer.org/v2/host.php?q={ip}&{rt}"
+    url = f"https://proxycheck.io/v2/{ip}?key={api_key}&vpn=1&asn=1&cur=0&risk=1&port=1&seen=1"
 
     response = requests.get(url=url)
-
     response.raise_for_status()
     parsed = json.loads(response.text)
 
-    print(format_data(parsed))
-
+    if full_data:
+        print(format_data(parsed))
+    else:
+        filtered_response = filter_data(parsed)
+        print(format_data(filtered_response))
+    
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
 except requests.exceptions.RequestException as e:
