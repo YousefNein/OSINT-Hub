@@ -15,7 +15,6 @@ headers = {
 }
 
 def format_data(data):
-    # Custom formatting for CVE and tags
     for key in ['cve', 'tags', 'CVE', 'Tags', 'User Agents', 'Target Countries']:
         if key in data and isinstance(data[key], list):
             data[key] = ','.join(data[key])
@@ -73,41 +72,59 @@ def filter_data(data):
 def parse_args(args):
     ip = None
     full_data = False
+    ip_file = None
+
+    if args == "--help" or args == "-h":
+        print("usage: ./greynoise.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.greynoise.io/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.")
+        sys.exit(0)
 
     for arg in args:
         if is_valid_ipv4(arg):
             ip = arg
         elif arg == '-f':
             full_data = True
+        elif arg.startswith("--file="):
+            ip_file = arg.split("=", 1)[1]
+        elif re.search(r'[0-9]{1,4}', arg):
+            print(f"{arg} is not a valid IPv4 address")
+            print("usage: ./greynoise.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.greynoise.io/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.")
+            sys.exit(1)
         else:
             print(f"Error: Unknown flag {arg}")
             sys.exit(1)
     
-    return ip, full_data
+    return ip, full_data, ip_file
 
 try:
-    ip, full_data = parse_args(sys.argv[1:])
+    ip, full_data, ip_file = parse_args(sys.argv[1:])
 
-    if not ip:
+    if not ip and not ip_file:
         ip = input("Enter your IP address here:\n")
         full_data = input("Do you want the full data to be shown? Y/n\n").lower() in ['y', 'yes', '']
 
-    if not is_valid_ipv4(ip):
-        print(f"{ip} is not a valid IPv4 address")
-        sys.exit(1)
-    
-    # url = f"https://api.greynoise.io/v3/community/{ip}" #Free version
-    url = f"https://api.greynoise.io/v2/noise/context/{ip}" # Enterprise API
-
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    parsed = json.loads(response.text)
-
-    if full_data:
-        print(format_data(parsed))
+    if ip_file:
+        with open(ip_file, 'r') as file:
+            ips = [line.strip() for line in file if is_valid_ipv4(line.strip())]
     else:
-        filtered_response = filter_data(parsed)
-        print(format_data(filtered_response))
+        ips = [ip]
+
+    for ip in ips:
+        if not is_valid_ipv4(ip):
+            print(f"{ip} is not a valid IPv4 address")
+            continue
+   
+        # url = f"https://api.greynoise.io/v3/community/{ip}" #Free version
+        url = f"https://api.greynoise.io/v2/noise/context/{ip}" # Enterprise API
+
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        parsed = json.loads(response.text)
+
+        if full_data:
+            print(format_data(parsed))
+        else:
+            filtered_response = filter_data(parsed)
+            print(format_data(filtered_response))
     
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
