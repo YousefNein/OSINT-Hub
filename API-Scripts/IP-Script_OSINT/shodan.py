@@ -88,7 +88,6 @@ try:
         url = f"https://api.shodan.io/shodan/host/{ip}"
         response = requests.get(headers=headers, url=url)
         
-        response.raise_for_status()
         parsed = json.loads(response.text)
 
         if full_data:

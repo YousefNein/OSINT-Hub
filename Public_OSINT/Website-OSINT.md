@@ -2,17 +2,17 @@
 
 subfinder - https://github.com/projectdiscovery/subfinder
 ```bash
-sudo apt install subfinder
+go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 ```
 
 Assetfinder - https://github.com/tomnomnom/assetfinder
 ```bash
-sudo go get -u github.com/tomnomnom/assetfinder
+go install github.com/tomnomnom/assetfinder@latest
 ```
 
 httprobe - https://github.com/tomnomnom/httprobe
 ```bash
-sudo go install github.com/tomnomnom/httprobe@latest
+go install github.com/tomnomnom/httprobe@latest
 ```
 
 Amass - https://github.com/OWASP/Amass
@@ -39,6 +39,7 @@ whatweb - https://www.kali.org/tools/whatweb/
 ```bash
 sudo apt install whatweb
 ```
+
 ## Online
 
 BuiltWith - https://builtwith.com/

@@ -35,6 +35,7 @@ def filter_data(data):
         "IP": ip_key,
         "Network": ip_data.get('range'),
         "ISP": ip_data.get('provider'),
+        "Hostname": ip_data.get('hostname'),
         "Organisation": ip_data.get('organisation'),
         "Country": ip_data.get('country'),
         "City": ip_data.get('city'),
