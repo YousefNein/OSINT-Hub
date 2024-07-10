@@ -79,12 +79,13 @@ def parse_args(args):
     rt = None
     full_data = False
     ip_file = None
+    help = "usage: ./threatminer.py <ip> [-h] [-f] --file==[FILE]  rt=[1 to 6]\n\nAn API script to gather data from https://www.threatminer.org/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line.\n  rt=[1 to 6]        Specify the number of ThreatMiner flags.\n  rt=1 for WHOIS, rt=2 for Passive DNS, rt=3 for URIs, rt=4 for Related Samples, rt=5 for SSL Certificates, rt=6 for Report tagging"
 
-    if args == "--help" or args == "-h":
-        print("usage: ./threatminer.py <ip> [-h] [-f] --file==[FILE]  rt=[1 to 6]\n\nAn API script to gather data from https://www.threatminer.org/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.\n  rt=[1 to 6]        Specify the number of ThreatMiner flags.\n  rt=1 for WHOIS, rt=2 for Passive DNS, rt=3 for URIs, rt=4 for Related Samples, rt=5 for SSL Certificates, rt=6 for Report tagging")
-        sys.exit(0)
     for arg in args:
-        if is_valid_ipv4(arg):
+        if arg == "--help" or arg == "-h":
+            print(help)
+            sys.exit(0)
+        elif is_valid_ipv4(arg):
             ip = arg
         elif arg.startswith('rt='):
             rt = arg
@@ -93,8 +94,8 @@ def parse_args(args):
         elif arg.startswith("--file="):
             ip_file = arg.split("=", 1)[1]
         else:
-            print(f"Error: Unknown flag {arg}")
-            print("usage: ./threatminer.py <ip> [-h] [-f] --file==[FILE]  rt=[1 to 6]\n\nAn API script to gather data from https://www.threatminer.org/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.\n  rt=[1 to 6]        Specify the number of ThreatMiner flags.\n  rt=1 for WHOIS, rt=2 for Passive DNS, rt=3 for URIs, rt=4 for Related Samples, rt=5 for SSL Certificates, rt=6 for Report tagging")
+            print(f"Error: Unknown flag {arg}\n")
+            print(help)
             sys.exit(1)
     
     return ip, rt, full_data, ip_file

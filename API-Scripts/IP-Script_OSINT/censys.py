@@ -58,13 +58,13 @@ def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
+    help = "usage: ./censys.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://search.censys.io/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
 
-    if args == "--help" or args == "-h":
-        print("usage: ./censys.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://search.censys.io/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.")
-        sys.exit(0)
-  
     for arg in args:
-        if is_valid_ipv4(arg):
+        if arg == "--help" or arg == "-h":
+            print(help)
+            sys.exit(0)
+        elif is_valid_ipv4(arg):
             ip = arg
         elif arg == '-f':
             full_data = True
@@ -74,7 +74,8 @@ def parse_args(args):
             print(f"{arg} is not a valid IPv4 address")
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}")
+            print(f"Error: Unknown flag {arg}\n")
+            print(help)
             sys.exit(1)
     
     return ip, full_data, ip_file

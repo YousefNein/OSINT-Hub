@@ -28,6 +28,9 @@ def filter_data(data):
     if data is None:
         return None
 
+    if data.get("error") is not None:
+        return data
+
     filtered_data = {
         "IP": data.get("ip_str"),
         "Country": data.get("country_name"),
@@ -37,7 +40,7 @@ def filter_data(data):
         "Domains": data.get("domains"),
         "OS": data.get("os"),
         "Ports": data.get("ports"),
-        # "HTTP Status": data["data"][2]["http"]["status"]
+        "HTTP Status": data.get("data", [{}])[2].get("http", {}).get("status")
     }
     return filtered_data
 
@@ -45,13 +48,13 @@ def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
-
-    if args == "--help" or args == "-h":
-        print("usage: ./shodan.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.shodan.io/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.")
-        sys.exit(0)
+    help = "usage: ./shodan.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.shodan.io/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
 
     for arg in args:
-        if is_valid_ipv4(arg):
+        if arg == "--help" or arg == "-h":
+            print(help)
+            sys.exit(0)
+        elif is_valid_ipv4(arg):
             ip = arg
         elif arg == '-f':
             full_data = True
@@ -61,8 +64,8 @@ def parse_args(args):
             print(f"{arg} is not a valid IPv4 address")
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}")
-            print("usage: ./shodan.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.shodan.io/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.")
+            print(f"Error: Unknown flag {arg}\n")
+            print(help)
             sys.exit(1)
     
     return ip, full_data, ip_file
@@ -94,7 +97,7 @@ try:
             print(format_data(parsed))
         else:
             filtered_response = filter_data(parsed)
-            print(format_data(filtered_response))
+            print(filtered_response)
     
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")

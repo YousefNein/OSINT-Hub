@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-apivoid_key = os.getenv('API_VOID')
+api_key = os.getenv('API_VOID')
 
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
@@ -57,13 +57,13 @@ def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
-
-    if args == "--help" or args == "-h":
-        print("usage: ./apivoid.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.apivoid.com/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.")
-        sys.exit(0)
-
+    help = "usage: ./apivoid.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.apivoid.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
+        
     for arg in args:
-        if is_valid_ipv4(arg):
+        if arg == "--help" or arg == "-h":
+            print(help)
+            sys.exit(0)
+        elif is_valid_ipv4(arg):
             ip = arg
         elif arg == '-f':
             full_data = True
@@ -73,7 +73,8 @@ def parse_args(args):
             print(f"{arg} is not a valid IPv4 address")
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}")
+            print(f"Error: Unknown flag {arg}\n")
+            print(help)
             sys.exit(1)
     
     return ip, full_data, ip_file
@@ -96,7 +97,7 @@ try:
             print(f"{ip} is not a valid IPv4 address")
             continue
     
-        url = f"https://endpoint.apivoid.com/iprep/v1/pay-as-you-go/?key={apivoid_key}&ip={ip}"
+        url = f"https://endpoint.apivoid.com/iprep/v1/pay-as-you-go/?key={api_key}&ip={ip}"
         response = requests.get(url=url)
 
         response.raise_for_status()

@@ -28,51 +28,146 @@ def filter_data(data):
         return None
 
     tags = set()
+    target = set()
     pulses = data.get("pulse_info", {}).get("pulses", [])
 
     for pulse in pulses:
         tags.update(pulse.get("tags", []))
+        target.update(pulse.get("targeted_countries", []))
 
-    filtered_data = {
-        "IP": data.get('indicator'),
+    section_data = {}
+
+    if section == "general":
+        section_data["General"] = {
+        "IP": ip,
         "Country": data.get("country_name"),
         "AS Name": data.get("asn"),
         "Reputation": data.get("reputation"),
         "Related Pulses": data.get("pulse_info", {}).get("count", 0),
         "Tags Count": len(tags),
-        "Related Tags": list(tags)
+        "Related Tags": list(tags),
+        "Targeted Countries": list(target)
     }
+    elif section == "malware":
+        section_data["Malware"] = {
+            "IP": ip,
+            "Data": data.get("data", []),
+            "Count": data.get("count", 0),
+            "Size": data.get("size", 0),
+        }
 
-    return filtered_data
+    elif section == "reputation":
+        section_data["Reputation"] = {
+            "IP": ip,
+            "Reputation": data.get("reputation"),
+        }
+
+    elif section == "passive_dns":
+        section_data["DNS"] = {
+            "IP": ip,
+            "Passive DNS": [
+        {        
+                "IP Address": entry.get("address"),
+                "Hostname": entry.get("hostname"),
+                "Record Type": entry.get("record_type"),
+                "AS Name": entry.get("asn"),
+         
+         }
+            for entry in data.get("passive_dns", []) ],
+            "Count": data.get("count", 0),
+        }
+
+    elif section == "geo":
+        section_data["Geo"] = {
+            "IP": ip,
+            "ASN": data.get("asn"),
+            "Country": data.get("country_name"),
+            "City": data.get("city"),
+            "Region": data.get("region"),
+            "Latitude": data.get("latitude"),
+            "Longitude": data.get("longitude"),
+        }
+
+    elif section == "url_list":
+        section_data["URL List"] = {
+            "IP": ip,
+            "URL List": [
+            {
+                "URL": entry.get("url"),
+                "Domain": entry.get("domain"),
+                "Hostname": entry.get("hostname"),
+                "Result": {
+                "URL Worker": {"HttpCode": entry.get("httpcode", 0)}
+                }
+            }
+            for entry in data.get("url_list", []) ],
+            "Count": data.get("count", 0),
+        }
+
+    elif section == "http_scans":
+        section_data["HTTP Scan"] = {
+            "IP": ip,
+            "Data": [
+                f"{entry.get('name')} : {entry.get('value')}"
+                for entry in data.get("data", [])
+            ],
+            "Count": data.get("count", 0),
+        }
+
+    section_data.update(section_data)
+
+    return section_data
 
 def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
-
-    if args == "--help" or args == "-h":
-        print("usage: ./alienvault.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.")
-        sys.exit(0)
+    sections = []
+    help = "usage: ./alienvault.py <ip> [-h] [-f] [-a] [-g] [-c] [-r] [-d] [-m] [-u] [-s] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -a              Retrieve all data.\n  -g              Retrieve general data. (Default)\n  -c              Retrieve Geo data.\n  -r              Retrieve Reputation data.\n  -m              Retrieve Malware data.\n  -d              Retrieve Passive DNS data.\n  -u              Retrieve URL list data.\n  -s              Retrieve HTTP scans data.\n  --file==[FILE]  Full path to a test file containing a domain name on each line."
+    
+    section_map = {
+        'g': 'general',
+        'c': "geo",
+        'r': "reputation",
+        'm': "malware",
+        'd': "passive_dns",
+        'u': "url_list",
+        's': "http_scans"
+    }
 
     for arg in args:
-        if is_valid_ipv4(arg):
+        if arg == "--help" or arg == "-h":
+            print(help)
+            sys.exit(0)
+        elif is_valid_ipv4(arg):
             ip = arg
-        elif arg == '-f':
-            full_data = True
         elif arg.startswith("--file="):
             ip_file = arg.split("=", 1)[1]
+        elif arg.startswith('-'):
+            for flag in arg[1:]:
+                if flag == 'f':
+                    full_data = True
+                elif flag == 'a':
+                    sections = set(section_map.values())
+                elif flag in section_map:
+                    sections.append(section_map[flag])
+                else:
+                    print(f"Error: Unknown flag -{flag}")
+                    print(help)
+                    sys.exit(1)
         elif re.search(r'[0-9]{1,4}', arg):
             print(f"{arg} is not a valid IPv4 address")
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}")
-            print("usage: ./alienvault.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     show this help message and exit.\n  -f, --full     Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing an IP address on each line.")
+            print(f"Error: Unknown input {arg}\n")
+            print(help)
             sys.exit(1)
     
-    return ip, full_data, ip_file
+    return ip, full_data, ip_file, sections
 
 try:
-    ip, full_data, ip_file = parse_args(sys.argv[1:])
+    ip, full_data, ip_file, sections = parse_args(sys.argv[1:])
+    sections = sections or ["general"]
 
     if not ip and not ip_file:
         ip = input("Enter your IP address here:\n")
@@ -89,17 +184,18 @@ try:
             print(f"{ip} is not a valid IPv4 address")
             continue
 
-        url = f"https://otx.alienvault.com/api/v1/indicators/IPv4/{ip}/general"
+        for section in sections:
+            url = f"https://otx.alienvault.com/api/v1/indicators/IPv4/{ip}/{section}"
 
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        parsed = json.loads(response.text)
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            parsed = json.loads(response.text)
 
-        if full_data:
-            print(format_data(parsed))
-        else:
-            filtered_response = filter_data(parsed)
-            print(format_data(filtered_response))
+            if full_data:
+                print(format_data(parsed))
+            else:
+                filtered_response = filter_data(parsed)
+                print(format_data(filtered_response))
 
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
