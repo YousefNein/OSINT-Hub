@@ -16,26 +16,26 @@ def is_valid_ipv4(ip):
         return all(0 <= int(part) < 256 for part in ip.split('.'))
     return False
 
-def filter_data(data, rt):
+def filter_data(data, section, ip):
     if data is None or 'results' not in data:
         return None
+    
+    section_data = {}
 
-    if data["status_message"] == "No results found.":
-        return f"No data was found for IP {ip}"
-
-    if rt == "rt=1":
-        filtered_data = {
+    if section == "1":
+        section_data["Whois"] = [
+            {
             "IP": ip,
-            "Hostname": data["results"][0].get("reverse_name"),
-            "Network": data["results"][0].get("bgp_prefix"),
-            "Country": data["results"][0].get("cc"),
-            "ASN": data["results"][0].get("asn"),
-            "ASN Name": data["results"][0].get("asn_name"),
-            "Organization": data["results"][0].get("org_name"),
-            "Registrar": data["results"][0].get("register")
-        }
-    elif rt == "rt=2":
-        filtered_data = [
+            "Hostname": entry.get("reverse_name"),
+            "Network": entry.get("bgp_prefix"),
+            "Country": entry.get("cc"),
+            "Org": entry.get("org_name"),
+            "Register": entry.get("register")
+            }
+        for entry in data["results"]
+        ]
+    elif section == "2":
+        section_data["DNS"] = [
             {
                 "IP": ip,
                 "Domain": entry.get("domain"),
@@ -44,23 +44,22 @@ def filter_data(data, rt):
             }
             for entry in data["results"]
         ]
-    elif rt == "rt=3":
-        filtered_data = [
+    elif section == "3":
+        section_data["URI"] = [
             {
                 "IP": ip,
                 "Domain": entry.get("domain"),
-                "IP": entry.get("ip"),
                 "URI": entry.get("uri"),
                 "Last Seen": entry.get("last_seen")
             }
             for entry in data["results"]
         ]
-    elif rt == "rt=4":
-        filtered_data = { "IP": ip, "Hashes": data["results"]}
-    elif rt == "rt=5":
-        filtered_data = { "IP": ip, "Certificate": data["results"]}
-    elif rt == "rt=6":
-        filtered_data = [
+    elif section == "4":
+        section_data["Hashes"] = { "IP": ip, "Hashes": data["results"]}
+    elif section == "5":
+        section_data["SSL Certificate"] = { "IP": ip, "Certificate": data["results"]}
+    elif section == "6":
+        section_data["Reports"] = [
             {
                 "IP": ip,
                 "Filename": entry.get("filename"),
@@ -70,16 +69,25 @@ def filter_data(data, rt):
             for entry in data["results"]
         ]
     else:
-        filtered_data = data
+        section_data = data
 
-    return filtered_data
+    return section_data
 
 def parse_args(args):
     ip = None
-    rt = None
     full_data = False
     ip_file = None
-    help = "usage: ./threatminer.py <ip> [-h] [-f] --file==[FILE]  rt=[1 to 6]\n\nAn API script to gather data from https://www.threatminer.org/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line.\n  rt=[1 to 6]        Specify the number of ThreatMiner flags.\n  rt=1 for WHOIS, rt=2 for Passive DNS, rt=3 for URIs, rt=4 for Related Samples, rt=5 for SSL Certificates, rt=6 for Report tagging"
+    sections = []
+    help = "usage: ./threatminer.py <ip> [-h] [-f] [-a] [-w] [-d] [-u] [-r] [-s] [-t] --file==[FILE]\n\nAn API script to gather data from https://www.threatminer.org/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f             Retrieve the API full data.\n  -a             Retrieve all data.\n  -w             Retrieve WHOIS data.\n  -d             Retrieve Passive DNS data.\n  -u             Retrieve URIs.\n  -r             Retrieve Related Samples (Hash only).\n  -s             Retrieve SSL Certificates (Hash only).\n  -t             Retrieve Report tagging data.\n  --file==[FILE] Full path to a test file containing an IP address on each line."
+
+    section_map = {
+        'w': '1',
+        'd': "2",
+        'u': "3",
+        'r': "4",
+        's': "5",
+        't': "6"
+    }
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -87,27 +95,33 @@ def parse_args(args):
             sys.exit(0)
         elif is_valid_ipv4(arg):
             ip = arg
-        elif arg.startswith('rt='):
-            rt = arg
-        elif arg == '-f':
-            full_data = True
         elif arg.startswith("--file="):
             ip_file = arg.split("=", 1)[1]
+        elif arg.startswith('-'):
+            for flag in arg[1:]:
+                if flag == 'f':
+                    full_data = True
+                elif flag == 'a':
+                    sections = list(section_map.values())
+                elif flag in section_map:
+                    sections.append(section_map[flag])
+                else:
+                    print(f"Error: Unknown flag -{flag}")
+                    print(help)
+                    sys.exit(1)
+        elif re.search(r'[0-9]{1,4}', arg):
+            print(f"{arg} is not a valid IPv4 address")
+            sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}\n")
             print(help)
             sys.exit(1)
     
-    return ip, rt, full_data, ip_file
+    return ip, full_data, ip_file, sections
 
 try:
-    ip, rt, full_data, ip_file = parse_args(sys.argv[1:])
-
-    if not rt:
-        rt = input("Enter the query type (rt=1 for WHOIS, rt=2 for Passive DNS, rt=3 for URIs, rt=4 for Related Samples, rt=5 for SSL Certificates, rt=6 for Report tagging):\n")
-        if not rt.startswith('rt='):
-            print(f"Error: Invalid query type {rt}")
-            sys.exit(1)
+    ip, full_data, ip_file, sections = parse_args(sys.argv[1:])
+    sections = sections or ["1"]
 
     if not ip and not ip_file:
         ip = input("Enter your IP address here:\n")
@@ -125,18 +139,18 @@ try:
             print(f"{ip} is not a valid IPv4 address")
             continue
 
-        url = f"https://api.threatminer.org/v2/host.php?q={ip}&{rt}"
+        for section in sections:
+            url = f"https://api.threatminer.org/v2/host.php?q={ip}&rt={section}"
 
-        response = requests.get(url=url)
+            response = requests.get(url=url)
+            response.raise_for_status()
+            parsed = json.loads(response.text)
 
-        response.raise_for_status()
-        parsed = json.loads(response.text)
-
-        if full_data:
-            print(format_data(parsed))
-        else:
-            filtered_response = filter_data(parsed, rt)
-            print(format_data(filtered_response))
+            if full_data:
+                print(format_data(parsed))
+            else:
+                filtered_response = filter_data(parsed, section, ip)
+                print(format_data(filtered_response))
 
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")

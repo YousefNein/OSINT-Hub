@@ -28,11 +28,12 @@ def filter_data(data):
     report = data.get('data', {}).get('report', {})
 
     filtered_data = {
-        "IP": report.get('domain'),
-        "ISP": report.get('information', {}).get('isp'),
-        "Hostname": report.get('information', {}).get('reverse_dns'),
-        "Country": report.get('information', {}).get('country_name'),
-        "City": report.get('information', {}).get('city_name'),
+        "Domain": domain,
+        "IP": report.get('server', {}).get('ip'),
+        "ISP": report.get('server', {}).get('isp'),
+        "Hostname": report.get('server', {}).get('reverse_dns'),
+        "Country": report.get('server', {}).get('country_name'),
+        "City": report.get('server', {}).get('city_name'),
         "Risk Score": report.get('risk_score', {}).get('result'),
         "Blacklist Detections": report.get('blacklists', {}).get('detections'),
         "Blacklist Engines Count": report.get('blacklists', {}).get('engines_count'),
@@ -40,11 +41,14 @@ def filter_data(data):
     }
 
     boolean_fields = {
-        "Is Proxy": report.get('anonymity', {}).get('is_proxy'),
-        "Is Web Proxy": report.get('anonymity', {}).get('is_webproxy'),
-        "Is VPN": report.get('anonymity', {}).get('is_vpn'),
-        "Is Hosting": report.get('anonymity', {}).get('is_hosting'),
-        "Is Tor": report.get('anonymity', {}).get('is_tor')
+        "Is Free Hosting": report.get('category', {}).get('is_free_hosting'),
+        "Is Anonymizer": report.get('category', {}).get('is_anonymizer'),
+        "Is URL Shortener": report.get('category', {}).get('is_url_shortener'),
+        "Is Free Dynamic DNS": report.get('category', {}).get('is_free_dynamic_dns'),
+        "Is Code Sandbox": report.get('category', {}).get('is_code_sandbox'),
+        "Is Form Builder": report.get('category', {}).get('is_form_builder'),
+        "Is Free File Sharing": report.get('category', {}).get('is_free_file_sharing'),
+        "Is Pastebin": report.get('category', {}).get('is_pastebin')
     }
 
     for field, value in boolean_fields.items():
@@ -57,7 +61,7 @@ def parse_args(args):
     domain = None
     full_data = False
     domain_file = None
-    help = "usage: ./apivoid.py <domain> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.apivoid.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing a domain name on each line."
+    help = "usage: ./apivoid.py <domain> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.apivoid.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -98,7 +102,7 @@ try:
             print(f"{domain} is not a valid domain name")
             continue
     
-        url = f"https://endpoint.apivoid.com/iprep/v1/pay-as-you-go/?key={apivoid_key}&domain={domain}"
+        url = f"https://endpoint.apivoid.com/domainbl/v1/pay-as-you-go/?key={apivoid_key}&host={domain}"
         response = requests.get(url=url)
 
         response.raise_for_status()

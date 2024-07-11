@@ -41,15 +41,23 @@ def filter_data(data):
         "Creation Time": data.get("creation_time"),
     }
     
-    boolean_fields = [
-        "is_cdn", "is_cnc", "is_distributing_malware", "is_hosting",
-        "is_iot_threat", "is_known_attacker", "is_known_scanner",
-        "is_mining_pool", "is_open_proxy", "is_sinkhole",
-        "is_tor_node", "is_vpn_node"
-    ]
+    boolean_fields = {
+        "Is CDN": data.get("is_cdn"),
+        "Is CNC": data.get("is_cnc"),
+        "Is Distributing Malware": data.get("is_distributing_malware"),
+        "Is Hosting": data.get("is_hosting"),
+        "Is IoT Threat": data.get("is_iot_threat"),
+        "Is Known Attacker": data.get("is_known_attacker"),
+        "Is Known Scanner": data.get("is_known_scanner"),
+        "Is Mining Pool": data.get("is_mining_pool"),
+        "Is Open Proxy": data.get("is_open_proxy"),
+        "Is Sinkhole": data.get("is_sinkhole"),
+        "Is Tor Node": data.get("is_tor_node"),
+        "Is VPN Node": data.get("is_vpn_node")
+    }
 
-    for field in boolean_fields:
-        if data.get(field, False):
+    for field, value in boolean_fields.items():
+        if value:
             filtered_data[field] = True
 
     return filtered_data
@@ -58,7 +66,7 @@ def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
-    help = "usage: ./maltiverse.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://maltiverse.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
+    help = "usage: ./maltiverse.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://maltiverse.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":

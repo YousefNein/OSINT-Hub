@@ -34,31 +34,27 @@ def filter_data(data):
     if data is None:
         return None
 
-    max_score_ip = max(data["history"], key=lambda x: x.get('score', 0))
-    categories = data.get("cats")
-    category_descriptions = data.get("categoryDescriptions")
-    if not categories or not category_descriptions:    
-        categories = max_score_ip["cats"]
-    category_descriptions = max_score_ip["categoryDescriptions"]
     filtered_data = {
-        "IP": data.get("domain"),
-        "Country": data.get("geo").get("country"),
-        "Network": max_score_ip["domain"],
-        "First seen": max_score_ip["created"],
-        "Reports count": len(data.get("history", [])),
-        "Score": data.get("score"),
-        "Max score": max_score_ip["score"],
-        "Categories": data.get("cats"),
-        "Category Description": category_descriptions,
-        "Reason": max_score_ip["reasonDescription"]
-    }
+        "Domain": domain,
+        "Created Date": data.get("createdDate"),
+        "Contact Email": data.get("contactEmail"),
+        "Registrar Name": data.get("registrarName"),
+        "Contact": [
+            {        
+                "Type": contact.get('type'),
+                "Org": contact.get("organization"),
+                "Country": contact.get("country"),
+                "Name": contact.get("name"),
+            } 
+            for contact in data.get("contact", [])],
+        }
     return filtered_data
 
 def parse_args(args):
     domain = None
     full_data = False
     domain_file = None
-    help ="usage: ./ibmxforce.py <domain> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing a domain name on each line."
+    help ="usage: ./ibmxforce.py <domain> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -72,7 +68,7 @@ def parse_args(args):
             domain_file = arg.split("=", 1)[1]
         elif re.search(r'(\.[a-zA-Z0-9-_]+))', arg):
             print(f"{arg} is not a valid domain name")
-            print("usage: ./ibmxforce.py <domain> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing a domain name on each line.")
+            print("usage: ./ibmxforce.py <domain> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line.")
             sys.exit(1)
         else:
             print(f"Error: Unknown flag {arg}\n")
@@ -100,7 +96,7 @@ try:
             print(f"{domain} is not a valid domain name")
             continue
 
-        url = f'https://api.xforce.ibmcloud.com/api/ipr/{domain}'
+        url = f'https://api.xforce.ibmcloud.com/api/whois/{domain}'
         response = requests.get(url=url, headers=headers)
         
         response.raise_for_status()

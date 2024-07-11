@@ -52,7 +52,7 @@ def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
-    help = "usage: ./ipdata.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://ipdata.co/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
+    help = "usage: ./ipdata.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://ipdata.co/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":

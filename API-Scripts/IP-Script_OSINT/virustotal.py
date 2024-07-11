@@ -6,7 +6,7 @@ import sys
 import json
 import re
 from dotenv import load_dotenv
-
+from datetime import datetime
 load_dotenv()
 
 headers = {
@@ -30,12 +30,15 @@ def filter_data(data):
     
     attributes = data.get("data", {}).get("attributes", {})
     last_analysis_stats = attributes.get("last_analysis_stats", {})
+    last_analysis_date = attributes.get("last_analysis_date")
+    last_analysis_date = datetime.fromtimestamp(last_analysis_date).strftime('%Y-%m-%d')
 
     filtered_data = {
         "IP": data.get('data', {}).get('id'),
         "AS Name": attributes.get("as_owner"),
         "Country": attributes.get("country"),
         "Network": attributes.get("network"),
+        "Last Analysis": last_analysis_date,
         "Harmless": last_analysis_stats.get("harmless", 0),
         "Malicious": last_analysis_stats.get("malicious", 0),
         "Suspicious": last_analysis_stats.get("suspicious", 0),
@@ -48,7 +51,7 @@ def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
-    help = "usage: ./virustotal.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.virustotal.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
+    help = "usage: ./virustotal.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.virustotal.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":

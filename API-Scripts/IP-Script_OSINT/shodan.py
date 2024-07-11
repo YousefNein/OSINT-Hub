@@ -48,7 +48,7 @@ def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
-    help = "usage: ./shodan.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.shodan.io/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
+    help = "usage: ./shodan.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.shodan.io/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -97,12 +97,13 @@ try:
             print(format_data(parsed))
         else:
             filtered_response = filter_data(parsed)
-            print(filtered_response)
+            print(format_data(filtered_response))
     
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
 except requests.exceptions.RequestException as e:
     print(f"An error occurred: {e}")
+    print(response.json())
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
 

@@ -6,14 +6,16 @@ import sys
 import json
 import re
 from dotenv import load_dotenv
-from datetime import datetime
 
 load_dotenv()
 
-headers = {
-    'Accept': 'application/json',
-    'x-apikey': os.environ.get("VIRUS_TOTAL_API")
+api_key = os.environ.get("MALTIVERSE")
+
+headers = { 
+    'Authorization':'Bearer ' + api_key 
 }
+
+load_dotenv()
 
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
@@ -29,20 +31,29 @@ def filter_data(data):
     if data is None:
         return None
 
-    attributes = data.get("data", {}).get("attributes", {})
-    last_analysis_stats = attributes.get("last_analysis_stats", {})
-    creation_date = attributes.get("creation_date") or attributes.get("whois_date")
-    creation_date = datetime.fromtimestamp(creation_date).strftime('%Y-%m-%d')
-
     filtered_data = {
-        "Domain": data.get('data', {}).get('id'),
-        "Creation Date": creation_date,
-        "Categories": attributes.get("categories"),
-        "Harmless": last_analysis_stats.get("harmless", 0),
-        "Malicious": last_analysis_stats.get("malicious", 0),
-        "Suspicious": last_analysis_stats.get("suspicious", 0),
-        "Timeout": last_analysis_stats.get("timeout", 0)
+        "Hostname": data.get("hostname"),
+        "Type": data.get("type"),
+        "Classification": data.get("classification"),
+        "Tag": data.get("tag"),
+        "Creation Time": data.get("creation_time"),
+        "Modification Time": data.get("modification_time"),
+        "Blacklist": data.get("blacklist", []),
     }
+    
+    boolean_fields = {
+        "Is IoT Threat": data.get("is_iot_threat"),
+        "Is Alive": data.get("is_alive"),
+        "Is CNC": data.get("is_cnc"),
+        "Is Distributing Malware": data.get("is_distributing_malware"),
+        "Is Mining Pool": data.get("is_mining_pool"),
+        "Is Storing Phishing": data.get("is_storing_phishing"),
+        "Is Phishing": data.get("is_phishing")
+    }
+
+    for field, value in boolean_fields.items():
+        if value:
+            filtered_data[field] = True
 
     return filtered_data
 
@@ -50,7 +61,7 @@ def parse_args(args):
     domain = None
     full_data = False
     domain_file = None
-    help = "usage: ./virustotal.py <domain> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.virustotal.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
+    help = "usage: ./maltiverse.py <hostname> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://maltiverse.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing a domain on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -62,8 +73,8 @@ def parse_args(args):
             full_data = True
         elif arg.startswith("--file="):
             domain_file = arg.split("=", 1)[1]
-        elif re.search(r'(\.[a-zA-Z0-9-_]+))', arg):
-            print(f"{arg} is not a valid domain name")
+        elif re.search(r'[0-9]{1,4}', arg):
+            print(f"{arg} is not a valid domain address")
             sys.exit(1)
         else:
             print(f"Error: Unknown flag {arg}\n")
@@ -76,33 +87,34 @@ try:
     domain, full_data, domain_file = parse_args(sys.argv[1:])
 
     if not domain and not domain_file:
-        domain = input("Enter your domain name here:\n")
-
+        domain = input("Enter your domain address here:\n")
         full_data = input("Do you want the full data to be shown? Y/n\n").lower() in ['y', 'yes', '']
 
     if domain_file:
         with open(domain_file, 'r') as file:
-            domains = [line.strip() for line in file if is_valid_domain(line.strip())]
+            ips = [line.strip() for line in file if is_valid_domain(line.strip())]
     else:
-        domains = [domain]
+        ips = [domain]
 
-    for domain in domains:
+    for domain in ips:
         if not is_valid_domain(domain):
-            print(f"{domain} is not a valid domain name")
+            print(f"{domain} is not a valid domain address")
             continue
+    
+        url = f'https://api.maltiverse.com/hostname/{domain}'
 
-        url = f"https://www.virustotal.com/api/v3/domains/{domain}"
+        response = requests.get(url, headers=headers)
 
-        response = requests.get(headers=headers, url=url)
         response.raise_for_status()
         parsed = json.loads(response.text)
-
+        
+        
         if full_data:
             print(format_data(parsed))
         else:
             filtered_response = filter_data(parsed)
             print(format_data(filtered_response))
-    
+
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
 except requests.exceptions.RequestException as e:

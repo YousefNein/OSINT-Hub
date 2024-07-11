@@ -38,7 +38,7 @@ def filter_data(data):
     section_data = {}
 
     if section == "general":
-        section_data["Genral"] = {
+        section_data["General"] = {
         "Domain": domain,
         "Country": data.get("country_name"),
         "AS Name": data.get("asn"),

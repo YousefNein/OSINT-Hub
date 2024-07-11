@@ -16,53 +16,55 @@ def is_valid_domain(domain):
         return True
     return False
 
-def filter_data(data, rt):
+def filter_data(data, section, domain):
     if data is None or 'results' not in data:
         return None
+    
+    section_data = {}
 
-    if data["status_message"] == "No results found.":
-        return f"No data was found for IP {domain}"
-
-    if rt == "rt=1":
-        filtered_data = {
-            "IP": domain,
-            "Hostname": data["results"][0].get("reverse_name"),
-            "Network": data["results"][0].get("bgp_prefix"),
-            "Country": data["results"][0].get("cc"),
-            "ASN": data["results"][0].get("asn"),
-            "ASN Name": data["results"][0].get("asn_name"),
-            "Organization": data["results"][0].get("org_name"),
-            "Registrar": data["results"][0].get("register")
-        }
-    elif rt == "rt=2":
-        filtered_data = [
+    if section == "1":
+        section_data["Whois"] = [
             {
-                "IP": domain,
-                "Domain": entry.get("domain"),
+            "Domain": domain,
+            "Updated Date": entry.get("whois", {}).get("updated_date"),
+            "Creation Date": entry.get("whois", {}).get("creation_date"),
+            "Expiration Date": entry.get("whois", {}).get("expiration_date"),
+            "Registrar": entry.get("whois", {}).get("registrar"),
+            "Whois Server": entry.get("whois", {}).get("whois_server"),
+            "Nameservers": entry.get("whois", {}).get("nameservers"),
+            "Registrant Info": entry.get("whois", {}).get("registrant_info"),
+            "Date Checked": entry.get("whois", {}).get("date_checked")
+            }
+            for entry in data["results"]
+        ]
+    elif section == "2":
+        section_data["DNS"] = [
+            {
+                "Domain": domain,
+                "IP": entry.get("ip"),
                 "First Seen": entry.get("first_seen"),
                 "Last Seen": entry.get("last_seen")
             }
             for entry in data["results"]
         ]
-    elif rt == "rt=3":
-        filtered_data = [
+    elif section == "3":
+        section_data["URI"] = [
             {
-                "IP": domain,
+                "Domain": domain,
                 "Domain": entry.get("domain"),
-                "IP": entry.get("domain"),
                 "URI": entry.get("uri"),
                 "Last Seen": entry.get("last_seen")
             }
             for entry in data["results"]
         ]
-    elif rt == "rt=4":
-        filtered_data = { "IP": domain, "Hashes": data["results"]}
-    elif rt == "rt=5":
-        filtered_data = { "IP": domain, "Certificate": data["results"]}
-    elif rt == "rt=6":
-        filtered_data = [
+    elif section == "4":
+        section_data["Hashes"] = { "Domain": domain, "Hashes": data["results"]}
+    elif section == "5":
+        section_data["Subdomains"] = { "Domain": domain, "Certificate": data["results"]}
+    elif section == "6":
+        section_data["Reports"] = [
             {
-                "IP": domain,
+                "Domain": domain,
                 "Filename": entry.get("filename"),
                 "Year": entry.get("year"),
                 "URL": entry.get("URL")
@@ -70,16 +72,25 @@ def filter_data(data, rt):
             for entry in data["results"]
         ]
     else:
-        filtered_data = data
+        section_data = data
 
-    return filtered_data
+    return section_data
 
 def parse_args(args):
     domain = None
-    rt = None
     full_data = False
-    domain_file = None
-    help = "usage: ./threatminer.py <domain> [-h] [-f] --file==[FILE]  rt=[1 to 6]\n\nAn API script to gather data from https://www.threatminer.org/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]    Full path to a test file containing a domain name on each line.\n  rt=[1 to 6]        Specify the number of ThreatMiner flags.\n  rt=1 for WHOIS, rt=2 for Passive DNS, rt=3 for URIs, rt=4 for Related Samples, rt=5 for SSL Certificates, rt=6 for Report tagging"
+    ip_file = None
+    sections = []
+    help = "usage: ./threatminer.py <domain> [-h] [-f] [-a] [-w] [-d] [-u] [-r] [-s] [-t] --file==[FILE]\n\nAn API script to gather data from https://www.threatminer.org/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f             Retrieve the API full data.\n  -a             Retrieve all data.\n  -w             Retrieve WHOIS data.\n  -d             Retrieve Passive DNS data.\n  -u             Retrieve URIs.\n  -r             Retrieve Related Samples (Hash only).\n  -s             Retrieve Subdomains.\n  -t             Retrieve Report tagging data.\n  --file==[FILE] Full path to a test file containing a domain on each line."
+
+    section_map = {
+        'w': '1',
+        'd': "2",
+        'u': "3",
+        'r': "4",
+        's': "5",
+        't': "6"
+    }
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -87,57 +98,62 @@ def parse_args(args):
             sys.exit(0)
         elif is_valid_domain(arg):
             domain = arg
-        elif arg.startswith('rt='):
-            rt = arg
-        elif arg == '-f':
-            full_data = True
         elif arg.startswith("--file="):
-            domain_file = arg.split("=", 1)[1]
+            ip_file = arg.split("=", 1)[1]
+        elif arg.startswith('-'):
+            for flag in arg[1:]:
+                if flag == 'f':
+                    full_data = True
+                elif flag == 'a':
+                    sections = list(section_map.values())
+                elif flag in section_map:
+                    sections.append(section_map[flag])
+                else:
+                    print(f"Error: Unknown flag -{flag}")
+                    print(help)
+                    sys.exit(1)
+        elif re.search(r'[0-9]{1,4}', arg):
+            print(f"{arg} is not a valid IPv4 address")
+            sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}\n")
             print(help)
             sys.exit(1)
     
-    return domain, rt, full_data, domain_file
+    return domain, full_data, ip_file, sections
 
 try:
-    domain, rt, full_data, domain_file = parse_args(sys.argv[1:])
+    domain, full_data, ip_file, sections = parse_args(sys.argv[1:])
+    sections = sections or ["1"]
 
-    if not rt:
-        rt = input("Enter the query type (rt=1 for WHOIS, rt=2 for Passive DNS, rt=3 for URIs, rt=4 for Related Samples, rt=5 for SSL Certificates, rt=6 for Report tagging):\n")
-        if not rt.startswith('rt='):
-            print(f"Error: Invalid query type {rt}")
-            sys.exit(1)
-
-    if not domain and not domain_file:
-        domain = input("Enter your domain name here:\n")
-
+    if not domain and not ip_file:
+        domain = input("Enter your domain here:\n")
         full_data = input("Do you want the full data to be shown? Y/n\n").lower() in ['y', 'yes', '']
 
-    if domain_file:
-        with open(domain_file, 'r') as file:
-            domains = [line.strip() for line in file if is_valid_domain(line.strip())]
+    if ip_file:
+        with open(ip_file, 'r') as file:
+            ips = [line.strip() for line in file if is_valid_domain(line.strip())]
     else:
-        domains = [domain]
+        ips = [domain]
     
-    for domain in domains:
+    for domain in ips:
         time.sleep(6)
         if not is_valid_domain(domain):
-            print(f"{domain} is not a valid domain name")
+            print(f"{domain} is not a valid domain")
             continue
 
-        url = f"https://api.threatminer.org/v2/host.php?q={domain}&{rt}"
+        for section in sections:
+            url = f"https://api.threatminer.org/v2/domain.php?q={domain}&rt={section}"
 
-        response = requests.get(url=url)
+            response = requests.get(url=url)
+            response.raise_for_status()
+            parsed = json.loads(response.text)
 
-        response.raise_for_status()
-        parsed = json.loads(response.text)
-
-        if full_data:
-            print(format_data(parsed))
-        else:
-            filtered_response = filter_data(parsed, rt)
-            print(format_data(filtered_response))
+            if full_data:
+                print(format_data(parsed))
+            else:
+                filtered_response = filter_data(parsed, section, domain)
+                print(format_data(filtered_response))
 
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
