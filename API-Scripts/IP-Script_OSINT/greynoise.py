@@ -33,28 +33,28 @@ def filter_data(data):
         return None
 
     filtered_data = {
-        "IP": data.get('ip'),
-        "Country": data.get('metadata', {}).get('country'),
-        "AS Name": data.get('metadata', {}).get('organization'),
-        "Category": data.get('metadata', {}).get('category'),
-        "Hostname": data.get('metadata', {}).get('rdns'),
-        "OS": data.get('metadata', {}).get('os'),
-        "First seen": data.get('first_seen'),
-        "Last seen": data.get('last_seen'),
-        "Actor": data.get('actor'),
-        "Classification": data.get('classification'),
-        "CVE": data.get('cve', []),
-        "Tags": data.get('tags', []),
-        "URI Paths": data.get('raw_data', {}).get('web',{}).get('paths', []),
-        "User Agents": data.get('raw_data', {}).get('web',{}).get('useragents', []),
-        "Target Countries": data.get('metadata', {}).get('destination_country_codes')
-        # "IP": data.get('ip'), # Uncomment for the community version
-        # "Noise": data.get('noise'),
-        # "Riot": data.get('riot'),
+        # "IP": data.get('ip'), # Uncomment for the enterprise version
+        # "Country": data.get('metadata', {}).get('country'),
+        # "AS Name": data.get('metadata', {}).get('organization'),
+        # "Category": data.get('metadata', {}).get('category'),
+        # "Hostname": data.get('metadata', {}).get('rdns'),
+        # "OS": data.get('metadata', {}).get('os'),
+        # "First seen": data.get('first_seen'),
+        # "Last seen": data.get('last_seen'),
+        # "Actor": data.get('actor'),
         # "Classification": data.get('classification'),
-        # "Name": data.get('name'),
-        # "Link": data.get('link'),
-        # "Last seen": data.get('last_seen')
+        # "CVE": data.get('cve', []),
+        # "Tags": data.get('tags', []),
+        # "URI Paths": data.get('raw_data', {}).get('web',{}).get('paths', []),
+        # "User Agents": data.get('raw_data', {}).get('web',{}).get('useragents', []),
+        # "Target Countries": data.get('metadata', {}).get('destination_country_codes')
+        "IP": data.get('ip'), # Uncomment for the community version
+        "Noise": data.get('noise'),
+        "Riot": data.get('riot'),
+        "Classification": data.get('classification'),
+        "Name": data.get('name'),
+        "Link": data.get('link'),
+        "Last seen": data.get('last_seen')
     }
 
     boolean_fields = [
@@ -113,8 +113,8 @@ try:
             print(f"{ip} is not a valid IPv4 address")
             continue
    
-        # url = f"https://api.greynoise.io/v3/community/{ip}" #Free version
-        url = f"https://api.greynoise.io/v2/noise/context/{ip}" # Enterprise API
+        url = f"https://api.greynoise.io/v3/community/{ip}" #Free version
+        # url = f"https://api.greynoise.io/v2/noise/context/{ip}" # Enterprise API
 
         response = requests.get(url, headers=headers)
         response.raise_for_status()

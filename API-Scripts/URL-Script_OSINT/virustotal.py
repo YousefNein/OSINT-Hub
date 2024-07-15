@@ -6,16 +6,17 @@ import sys
 import json
 import re
 from dotenv import load_dotenv
+from datetime import datetime
 from time import sleep
 
 load_dotenv()
 
-headers_url_scan = {
-    'Content-Type': 'application/json',
-    'API-Key': os.environ.get("URL_SCAN_API")
+headers = {
+    'Accept': 'application/json',
+    'x-apikey': os.environ.get("VIRUS_TOTAL_API")
 }
 
-base_url = "https://urlscan.io/api/v1"
+base_url = "https://www.virustotal.com/api/v3"
 
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
@@ -35,21 +36,19 @@ def filter_data(data):
     if data is None:
         return None
     
-    page = data.get("page", {})
-    verdicts = data.get("verdicts", {}).get("urlscan") or data.get("verdicts", {}).get("overall", {})
-    if not verdicts:
-        verdicts = {"hasVerdicts": False}
+    attributes = data.get("data", {}).get("attributes", {})
+    date = attributes.get("date")
+    date = datetime.fromtimestamp(date).strftime('%Y-%m-%d')
 
     filtered_data = {
-        "URL": page.get("url"),
-        "Domain": page.get("domain"),
-        "IP": page.get("ip"),
-        "Country": page.get("country"),
-        "ASN Name": page.get("asnname"),
-        "Verdicts Brand": verdicts.get("brands"),
-        "Verdicts Category": verdicts.get("categories"),
-        "Malicious": verdicts.get("malicious"),
-        "Score": verdicts.get("score")
+        "URL": data.get("meta", {}).get("url_info", {}).get("url"),
+        "Date": date,
+        "Harmless": attributes.get("stats",{}).get("harmless", 0),
+        "Malicious": attributes.get("stats",{}).get("malicious", 0),
+        "Suspicious": attributes.get("stats",{}).get("suspicious", 0),
+        "Undetected": attributes.get("stats",{}).get("undetected", 0),
+        "Timeout": attributes.get("stats",{}).get("timeout", 0),
+        "File Info": data.get("meta", {}).get("file_info", {})
     }
     return filtered_data
 
@@ -57,8 +56,8 @@ def parse_args(args):
     url = None
     full_data = False
     url_file = None
-    help = "usage: ./urlscan.py <url> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://urlscan.io/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file=[FILE]   Full path to a test file containing an URL on each line."
-    uuid = None
+    help = "usage: ./virustotal.py <url or id> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.virustotal.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an URL or IDs on each line."
+    analysis_id = None
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -66,8 +65,8 @@ def parse_args(args):
             sys.exit(0)
         elif is_valid_url(arg):
             url = arg
-        elif re.match(r'^[0-9a-f-]{36}$', arg):
-            uuid = arg
+        elif re.match(r'^u-[0-9a-f]', arg):
+            analysis_id = arg
         elif arg == '-f':
             full_data = True
         elif arg.startswith("--file="):
@@ -80,45 +79,45 @@ def parse_args(args):
             print(help)
             sys.exit(1)
     
-    return url, full_data, url_file, uuid
+    return url, full_data, url_file, analysis_id
 
 def fetch_url_data(target):
     try:
         if is_valid_url(target):
-            payload = {"url": target, "visibility": "public"}
-            response = requests.post(f"{base_url}/scan/", headers=headers_url_scan, data=json.dumps(payload))
+            payload = {"url": target}
+            response = requests.post(f"{base_url}/urls", data=payload, headers=headers)
             response.raise_for_status()
             response = response.json()
-            uuid = response.get("uuid")
+            analysis_id = response.get("data", {}).get("id")
             print("Analysing the URL...\n")
         else:
-            uuid = target
+            analysis_id = target
         while True:
-            response = requests.get(f"{base_url}/result/{uuid}/", headers=headers_url_scan)
+            response = requests.get(f"{base_url}/analyses/{analysis_id}", headers=headers)
+            response.raise_for_status()
             data = response.json()
-            if response.status_code == 404 and data.get("message") == "Scan is not finished yet":
-                sleep(5)
-            elif response.status_code == 200:
+            if data.get("data", {}).get("attributes", {}).get("status") != "queued":
                 return data
+            sleep(5)
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
         print(response.json())
 
 try:
-    url, full_data, url_file, uuid = parse_args(sys.argv[1:])
+    url, full_data, url_file, analysis_id = parse_args(sys.argv[1:])
 
-    if not url and not url_file and not uuid:
+    if not url and not url_file and not analysis_id:
         url = input("Enter your URL here:\n")
         full_data = input("Do you want the full data to be shown? Y/n\n").lower() in ['y', 'yes', '']
 
     if url_file:
         with open(url_file, 'r') as file:
-            urls = [line.strip() for line in file if is_valid_url(line.strip()) or re.match(r'^[0-9a-f-]{36}$', line.strip())]
+            urls = [line.strip() for line in file if is_valid_url(line.strip()) or re.match(r'^[0-9a-f]{24}$', line.strip())]
     else:
         urls = [url]
 
     for url in urls:
-        data = fetch_url_data(url or uuid)
+        data = fetch_url_data(url or analysis_id)
         if data is None:
             break
         elif full_data:

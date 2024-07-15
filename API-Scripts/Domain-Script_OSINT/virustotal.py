@@ -41,6 +41,7 @@ def filter_data(data):
         "Harmless": last_analysis_stats.get("harmless", 0),
         "Malicious": last_analysis_stats.get("malicious", 0),
         "Suspicious": last_analysis_stats.get("suspicious", 0),
+        "Undetected": last_analysis_stats.get("undetected", 0),
         "Timeout": last_analysis_stats.get("timeout", 0)
     }
 
