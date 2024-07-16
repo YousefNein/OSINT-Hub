@@ -65,7 +65,7 @@ def parse_args(args):
             sys.exit(0)
         elif is_valid_url(arg):
             url = arg
-        elif re.match(r'^u-[0-9a-f]', arg):
+        elif re.match(r'^u-[0-9a-f]{64}-[0-9]{10}$', arg):
             analysis_id = arg
         elif arg == '-f':
             full_data = True
@@ -112,7 +112,7 @@ try:
 
     if url_file:
         with open(url_file, 'r') as file:
-            urls = [line.strip() for line in file if is_valid_url(line.strip()) or re.match(r'^[0-9a-f]{24}$', line.strip())]
+            urls = [line.strip() for line in file if is_valid_url(line.strip()) or re.match(r'^u-[0-9a-f]{64}-[0-9]{10}$', line.strip())]
     else:
         urls = [url]
 
