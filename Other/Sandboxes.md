@@ -11,3 +11,7 @@ Free Automated Malware Analysis Service | powered by Falcon Sandbox - https://ww
 Interactive Online Malware Analysis Sandbox | ANY.RUN - https://app.any.run/
 
 Simple File Analysis | Malcore - https://malcore.io/
+
+Simulate any Browser | WannaBrowser - https://www.wannabrowser.net/
+
+The Container Streaming Platform | Kasm Workspaces - https://www.wannabrowser.net/

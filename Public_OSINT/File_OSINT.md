@@ -64,3 +64,7 @@ Free Automated Malware Analysis Service | powered by Falcon Sandbox - https://ww
 Interactive Online Malware Analysis Sandbox | ANY.RUN - https://app.any.run/
 
 Simple File Analysis | Malcore - https://malcore.io/
+
+Lookup | Reputation Checker | Spamhaus - https://check.spamhaus.org/
+
+IOC Radar | SOCRadar LABS - https://socradar.io/labs/ioc-radar/
