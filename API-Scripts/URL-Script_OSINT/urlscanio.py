@@ -10,7 +10,7 @@ from time import sleep
 
 load_dotenv()
 
-headers_url_scan = {
+headers = {
     'Content-Type': 'application/json',
     'API-Key': os.environ.get("URL_SCAN_API")
 }
@@ -57,7 +57,7 @@ def parse_args(args):
     url = None
     full_data = False
     url_file = None
-    help = "usage: ./urlscan.py <url> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://urlscan.io/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file=[FILE]   Full path to a test file containing an URL on each line."
+    help = "usage: ./urlscan.py <url|uuid> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://urlscan.io/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file=[FILE]   Full path to a test file containing an URL on each line."
     uuid = None
 
     for arg in args:
@@ -86,7 +86,7 @@ def fetch_url_data(target):
     try:
         if is_valid_url(target):
             payload = {"url": target, "visibility": "public"}
-            response = requests.post(f"{base_url}/scan/", headers=headers_url_scan, data=json.dumps(payload))
+            response = requests.post(f"{base_url}/scan/", headers=headers, data=json.dumps(payload))
             response.raise_for_status()
             response = response.json()
             uuid = response.get("uuid")
@@ -94,7 +94,7 @@ def fetch_url_data(target):
         else:
             uuid = target
         while True:
-            response = requests.get(f"{base_url}/result/{uuid}/", headers=headers_url_scan)
+            response = requests.get(f"{base_url}/result/{uuid}/", headers=headers)
             data = response.json()
             if response.status_code == 404 and data.get("message") == "Scan is not finished yet":
                 sleep(5)

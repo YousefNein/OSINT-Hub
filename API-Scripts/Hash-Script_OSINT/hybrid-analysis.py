@@ -64,7 +64,7 @@ def parse_args(args):
     url = None
     full_data = False
     url_file = None
-    help_text = "usage: ./hybrid_analysis.py <url or id> [-h] [-f] --file=[FILE]\n\nAn API script to perform quick scan on a URL from https://www.hybrid-analysis.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file=[FILE]   Full path to a text file containing URLs or IDs, one per line."
+    help_text = "usage: ./hybrid_analysis.py <url|id> [-h] [-f] --file=[FILE]\n\nAn API script to perform quick scan on a URL from https://www.hybrid-analysis.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file=[FILE]   Full path to a text file containing URLs or IDs, one per line."
     analysis_id = None
 
     for arg in args:

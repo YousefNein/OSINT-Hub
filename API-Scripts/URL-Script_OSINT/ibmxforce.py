@@ -18,7 +18,7 @@ api_key_password = os.environ.get("IBM_XFORCE_API_PASS")
 credentials = f"{api_key}:{api_key_password}"
 encoded_credentials = base64.b64encode(credentials.encode()).decode()
 
-headers_xf = {
+headers = {
     'accept': 'application/json',
     'Authorization': f"Basic {encoded_credentials}"
 }
@@ -73,7 +73,7 @@ def parse_args(args):
     full_data = False
     url_file = None
     sections = []
-    help = "usage: ./ibm_xforce.py <url> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file=[FILE]  Full path to a test file containing URLs or IDs on each line."
+    help = "usage: ./ibm_xforce.py <url> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -r              Retrieve URL report data. (Default)\n  -m              Retrieve Malware data.\n  --file=[FILE]  Full path to a test file containing a URL on each line."
 
     section_map = {
         'r': "url",
@@ -108,14 +108,12 @@ def parse_args(args):
 
 def fetch_url_data(target):
     try:
-        if is_valid_url(target):
-            encoded_url = quote(target)
-            response = requests.get(f"{base_url_xf}/{section}/{encoded_url}", headers=headers_xf)
-            response.raise_for_status()
-            data = response.json()
-            return data
-        else:
-            raise ValueError("Invalid URL format.")
+        encoded_url = quote(target)
+        response = requests.get(f"{base_url_xf}/{section}/{encoded_url}", headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        return data
+
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
         print(response.json())

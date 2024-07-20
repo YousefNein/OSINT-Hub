@@ -1,7 +1,6 @@
 #!/bin/python3
 
 import requests
-import os
 import sys
 import json
 import re
@@ -27,95 +26,51 @@ def is_valid_url(url):
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     return re.match(pattern, url) is not None
 
-def filter_data(data):
+def filter_data(data, section):
     if data is None:
         return None
 
     tags = set()
-    target = set()
+    references = set()
     pulses = data.get("pulse_info", {}).get("pulses", [])
 
     for pulse in pulses:
         tags.update(pulse.get("tags", []))
-        target.update(pulse.get("targeted_countries", []))
+        references.update(pulse.get("references", []))
 
     section_data = {}
 
     if section == "general":
         section_data["General"] = {
-        "URL": url,
-        "Country": data.get("country_name"),
-        "AS Name": data.get("asn"),
-        "Reputation": data.get("reputation"),
-        "Related Pulses": data.get("pulse_info", {}).get("count", 0),
-        "Tags Count": len(tags),
-        "Related Tags": list(tags),
-        "Targeted Countries": list(target)
-    }
-    elif section == "malware":
-        section_data["Malware"] = {
             "URL": url,
-            "Data": data.get("data", []),
-            "Count": data.get("count", 0),
-            "Size": data.get("size", 0),
-        }
-
-    elif section == "reputation":
-        section_data["Reputation"] = {
-            "URL": url,
-            "Reputation": data.get("reputation"),
-        }
-
-    elif section == "passive_dns":
-        section_data["DNS"] = {
-            "URL": url,
-            "Passive DNS": [
-        {        
-                "URL Address": entry.get("address"),
-                "Hostname": entry.get("hostname"),
-                "Record Type": entry.get("record_type"),
-                "AS Name": entry.get("asn"),
-         
-         }
-            for entry in data.get("passive_dns", []) ],
-            "Count": data.get("count", 0),
-        }
-
-    elif section == "geo":
-        section_data["Geo"] = {
-            "URL": url,
-            "ASN": data.get("asn"),
-            "Country": data.get("country_name"),
-            "City": data.get("city"),
-            "Region": data.get("region"),
-            "Latitude": data.get("latitude"),
-            "Longitude": data.get("longitude"),
+            "Domain" : data.get("domain"),
+            "Hostname" : data.get("hostname"),
+            "Tags Count": len(tags),
+            "Related Tags": list(tags),
+            "References": list(references),
+            "False Positive" : data.get("false_positive")
         }
 
     elif section == "url_list":
         section_data["URL List"] = {
             "URL": url,
+            "Domain": data.get("net_loc"),
+            "City": data.get("city"),
+            "Country": data.get("country_name"),
             "URL List": [
             {
-                "URL": entry.get("url"),
-                "Domain": entry.get("domain"),
-                "Hostname": entry.get("hostname"),
                 "Result": {
-                "URL Worker": {"HttpCode": entry.get("httpcode", 0)}
+                "URL Worker": {
+                    "IP": entry.get("result", {}).get("urlworker", {}).get("ip"),
+                    "File Type": entry.get("result", {}).get("urlworker", {}).get("filetype"),
+                    "Headers": entry.get("result", {}).get("urlworker", {}).get("http_response"),
+                    "HTTP Status": entry.get("httpcode", 0)
+                    }
                 }
             }
-            for entry in data.get("url_list", []) ],
-            "Count": data.get("count", 0),
-        }
-
-    elif section == "http_scans":
-        section_data["HTTP Scan"] = {
-            "URL": url,
-            "Data": [
-                f"{entry.get('name')} : {entry.get('value')}"
-                for entry in data.get("data", [])
+            for entry in data.get("url_list", []) if entry.get("result", None) is not None
             ],
-            "Count": data.get("count", 0),
+
         }
 
     section_data.update(section_data)
@@ -127,16 +82,11 @@ def parse_args(args):
     full_data = False
     url_file = None
     sections = []
-    help = "usage: ./alienvault.py <url> [-h] [-f] [-a] [-g] [-c] [-r] [-d] [-m] [-u] [-s] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -a              Retrieve all data.\n  -g              Retrieve general data. (Default)\n  -c              Retrieve Geo data.\n  -r              Retrieve Reputation data.\n  -m              Retrieve Malware data.\n  -d              Retrieve Passive DNS data.\n  -u              Retrieve URL list data.\n  -s              Retrieve HTTP scans data.\n  --file==[FILE]  Full path to a test file containing a domain name on each line."
+    help = "usage: ./alienvault.py <url> [-h] [-f] [-a] [-g] [-u] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -a              Retrieve all data.\n  -g              Retrieve general data. (Default)\n  -u              Retrieve URL list data.\n  --file==[FILE]  Full path to a test file containing a URL on each line."
     
     section_map = {
         'g': 'general',
-        'c': "geo",
-        'r': "reputation",
-        'm': "malware",
-        'd': "passive_dns",
-        'u': "url_list",
-        's': "http_scans"
+        'u': "url_list"
     }
 
     for arg in args:
@@ -169,6 +119,17 @@ def parse_args(args):
     
     return url, full_data, url_file, sections
 
+def fetch_url_data(url, section):
+    try:
+        response = requests.post(f"https://otx.alienvault.com/api/v1/indicators/url/{url}/{section}")
+        response.raise_for_status()
+        data = response.json()
+        return data
+
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        print(response.json())
+
 try:
     url, full_data, url_file, sections = parse_args(sys.argv[1:])
     sections = sections or ["general"]
@@ -184,27 +145,17 @@ try:
         urls = [url]
 
     for url in urls:
-        if not is_valid_url(url):
-            print(f"{url} is not a valid IPv4 address")
-            continue
-
         for section in sections:
-            url = f"https://otx.alienvault.com/api/v1/indicators/IPv4/{url}/{section}"
-
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            parsed = json.loads(response.text)
-
-            if full_data:
-                print(format_data(parsed))
+            data = fetch_url_data(url, section)
+            if data is None:
+                break
+            elif full_data:
+                print(format_data(data))
             else:
-                filtered_response = filter_data(parsed)
+                filtered_response = filter_data(data, section)
                 print(format_data(filtered_response))
 
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
-except requests.exceptions.RequestException as e:
-    print(f"An error occurred: {e}")
-    print(response.json())
 except Exception as e:
     print(f"An unexpected error occurred: {e}")

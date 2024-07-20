@@ -1,19 +1,15 @@
 #!/bin/python3
 
 import requests
-import os
-import sys
 import json
 import re
-import hashlib
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
 
-api_key = os.environ.get("MALTIVERSE")
-
-headers = { 
-    'Authorization':'Bearer ' + api_key 
+headers = {
+    "Content-Type": "application/json"
 }
 
 def format_data(data):
@@ -33,37 +29,30 @@ def is_valid_url(url):
 def filter_data(data):
     if data is None:
         return None
+    
+    page = data.get("page", {})
+    verdicts = data.get("verdicts", {}).get("urlscan") or data.get("verdicts", {}).get("overall", {})
+    if not verdicts:
+        verdicts = {"hasVerdicts": False}
 
     filtered_data = {
-        "IP Address": data.get("ip_addr"),
-        "URL": data.get("url"),
-        "Classification": data.get("classification"),
-        "Creation Time": data.get("creation_time"),
-        "Last Online Time": data.get("last_online_time"),
-        "Modification Time": data.get("modification_time"),
-        "Tags": data.get("tag", []),
-        "Blacklists": data.get("blacklist", [])
+        "URL": page.get("url"),
+        "Domain": page.get("domain"),
+        "IP": page.get("ip"),
+        "Country": page.get("country"),
+        "ASN Name": page.get("asnname"),
+        "Verdicts Brand": verdicts.get("brands"),
+        "Verdicts Category": verdicts.get("categories"),
+        "Malicious": verdicts.get("malicious"),
+        "Score": verdicts.get("score")
     }
-    
-    boolean_fields = {
-        "Is Alive": data.get("is_alive"),
-        "Is CNC": data.get("is_cnc"),
-        "Is Distributing Malware": data.get("is_distributing_malware"),
-        "Is IoT Threat": data.get("is_iot_threat"),
-        "Is Phishing": data.get("is_phishing")
-    }
-
-    for field, value in boolean_fields.items():
-        if value:
-            filtered_data[field] = True
-
     return filtered_data
 
 def parse_args(args):
     url = None
     full_data = False
     url_file = None
-    help = "usage: ./maltiverse.py <url> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://maltiverse.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an URL on each line."
+    help = "usage: ./urlhaus.py <url> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://urlhaus.abuse.ch/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file=[FILE]   Full path to a test file containing an URL on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -76,7 +65,7 @@ def parse_args(args):
         elif arg.startswith("--file="):
             url_file = arg.split("=", 1)[1]
         elif re.search(r'^https?:', arg):
-            print(f"{arg} is not a valid IPv4 address")
+            print(f"{arg} is not a valid URL")
             sys.exit(1)
         else:
             print(f"Error: Unknown flag {arg}\n")
@@ -85,17 +74,17 @@ def parse_args(args):
     
     return url, full_data, url_file
 
-def fetch_url_data(url_checksum):
+def fetch_url_data(url):
     try:
-        url = f'https://api.maltiverse.com/url/{url_checksum}'
-        response = requests.get(url, headers=headers)
+        payload = {'url' : url}
+        response = requests.get(f"https://urlhaus-api.abuse.ch/v1/url//scan/", headers=headers, data=payload)
         response.raise_for_status()
         data = response.json()
         return data
 
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
-        return None
+        print(response.json())
 
 try:
     url, full_data, url_file = parse_args(sys.argv[1:])
@@ -111,12 +100,10 @@ try:
         urls = [url]
 
     for url in urls:
-        url_checksum = hashlib.sha256(url.encode("utf-8")).hexdigest()
-        data = fetch_url_data(url_checksum)
-
+        data = fetch_url_data(url)
         if data is None:
             break
-        if full_data:
+        elif full_data:
             print(format_data(data))
         else:
             filtered_response = filter_data(data)
@@ -126,3 +113,4 @@ except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
+

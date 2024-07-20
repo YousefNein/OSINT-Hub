@@ -6,6 +6,7 @@ import sys
 import json
 import re
 from dotenv import load_dotenv
+from urllib.parse import quote
 
 load_dotenv()
 
@@ -32,26 +33,21 @@ def filter_data(data):
     report = data.get('data', {}).get('report', {})
 
     filtered_data = {
-        "URL": report.get('url'),
-        "ISP": report.get('information', {}).get('isp'),
-        "Hostname": report.get('information', {}).get('reverse_dns'),
-        "Country": report.get('information', {}).get('country_name'),
-        "City": report.get('information', {}).get('city_name'),
+        "URL": url,
+        "ISP": report.get('server_details', {}).get('isp'),
+        "Hostname": report.get('server_details', {}).get('hostname'),
+        "Country": report.get('server_details', {}).get('country_name'),
+        "City": report.get('server_details', {}).get('city_name'),
         "Risk Score": report.get('risk_score', {}).get('result'),
-        "Blacklist Detections": report.get('blacklists', {}).get('detections'),
-        "Blacklist Engines Count": report.get('blacklists', {}).get('engines_count'),
-        "Blacklist Detection Rate": report.get('blacklists', {}).get('detection_rate'),
+        "Blacklist Detections": report.get('domain_blacklist', {}).get('detections'),
+        "Blacklist Engines Count": len(report.get('domain_blacklist', {}).get('engines', [])),
+        "Redirection" : report.get("redirection"),
+        "Response Headers" : report.get("response_headers", {}),
     }
 
-    boolean_fields = {
-        "Is Proxy": report.get('anonymity', {}).get('is_proxy'),
-        "Is Web Proxy": report.get('anonymity', {}).get('is_webproxy'),
-        "Is VPN": report.get('anonymity', {}).get('is_vpn'),
-        "Is Hosting": report.get('anonymity', {}).get('is_hosting'),
-        "Is Tor": report.get('anonymity', {}).get('is_tor')
-    }
+    security_checks = report.get("security_checks")
 
-    for field, value in boolean_fields.items():
+    for field, value in security_checks.items():
         if value:
             filtered_data[field] = True
 
@@ -83,6 +79,17 @@ def parse_args(args):
     
     return url, full_data, url_file
 
+def fetch_url_data(url):
+    try:
+        response = requests.get(f"https://endpoint.apivoid.com/urlrep/v1/pay-as-you-go/?key={api_key}&url={quote(url)}")
+        response.raise_for_status()
+        data = response.json()
+        return data
+
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        print(response.json())
+
 try:
     url, full_data, url_file = parse_args(sys.argv[1:])
 
@@ -95,28 +102,20 @@ try:
             urls = [line.strip() for line in file if is_valid_url(line.strip())]
     else:
         urls = [url]
-
-    for url in urls:
-        if not is_valid_url(url):
-            print(f"{url} is not a valid IPv4 address")
-            continue
     
-        url = f"https://endpoint.apivoid.com/iprep/v1/pay-as-you-go/?key={api_key}&url={url}"
-        response = requests.get(url=url)
-
-        response.raise_for_status()
-        parsed = json.loads(response.text)
-
-        if full_data:
-            print(format_data(parsed))
+    for url in urls:
+        data = fetch_url_data(url)
+        if data is None:
+            break
+        elif full_data:
+            print(format_data(data))
         else:
-            filtered_response = filter_data(parsed)
+            filtered_response = filter_data(data)
             print(format_data(filtered_response))
 
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
 except requests.exceptions.RequestException as e:
     print(f"An error occurred: {e}")
-    print(response.json())
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
