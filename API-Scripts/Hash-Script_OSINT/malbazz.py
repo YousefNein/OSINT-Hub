@@ -3,11 +3,11 @@
 import requests
 import json
 import re
-choice = input("You want to seach by hash or by URL?\nEnter (1) for URL or (2) for hash\n")
+choice = input("You want to seach by hash or by Hash?\nEnter (1) for Hash or (2) for hash\n")
 if choice == '1':
-    url = input("Enter the URL you want to scan here:\n")
-    data = {'url' : url}
-    response = requests.post('https://urlhaus-api.abuse.ch/v1/url/', data)
+    hash = input("Enter the Hash you want to scan here:\n")
+    data = {'hash' : hash}
+    response = requests.post('https://urlhaus-api.abuse.ch/v1/hash/', data)
     json_response = response.json()
     if json_response['query_status'] == 'ok':
         print(json.dumps(json_response, indent=4, sort_keys=False))
