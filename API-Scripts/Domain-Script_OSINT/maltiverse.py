@@ -73,11 +73,12 @@ def parse_args(args):
             full_data = True
         elif arg.startswith("--file="):
             domain_file = arg.split("=", 1)[1]
-        elif re.search(r'[0-9]{1,4}', arg):
-            print(f"{arg} is not a valid domain address")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     

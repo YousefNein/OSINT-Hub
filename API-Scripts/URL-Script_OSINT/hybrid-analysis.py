@@ -86,7 +86,7 @@ def parse_args(args):
     
     return url, full_data, url_file, analysis_id
 
-def fetch_url_data(target):
+def fetch_data(target):
     try:
         if is_valid_url(target):
             payload = f"scan_type=all&url={quote(target)}"
@@ -121,7 +121,7 @@ try:
         urls = [url]
 
     for url in urls:
-        data = fetch_url_data(url or analysis_id)
+        data = fetch_data(url or analysis_id)
         if data is None:
             break
         elif full_data:

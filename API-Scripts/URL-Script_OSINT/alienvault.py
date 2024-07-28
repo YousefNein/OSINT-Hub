@@ -82,7 +82,7 @@ def parse_args(args):
     full_data = False
     url_file = None
     sections = []
-    help = "usage: ./alienvault.py <url> [-h] [-f] [-a] [-g] [-u] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -a              Retrieve all data.\n  -g              Retrieve general data. (Default)\n  -u              Retrieve URL list data.\n  --file==[FILE]  Full path to a test file containing a URL on each line."
+    help = "usage: ./alienvault.py <url> [-h] [-f] [-a] [-g] [-u] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -g              Retrieve general data. (Default)\n  -u              Retrieve URL list data.\n  --file==[FILE]  Full path to a test file containing a URL on each line."
     
     section_map = {
         'g': 'general',
@@ -110,7 +110,7 @@ def parse_args(args):
                     print(help)
                     sys.exit(1)
         elif re.search(r'^https?:', arg):
-            print(f"{arg} is not a valid IPv4 address")
+            print(f"{arg} is not a valid URL")
             sys.exit(1)
         else:
             print(f"Error: Unknown input {arg}\n")
@@ -119,7 +119,7 @@ def parse_args(args):
     
     return url, full_data, url_file, sections
 
-def fetch_url_data(url, section):
+def fetch_data(url, section):
     try:
         response = requests.post(f"https://otx.alienvault.com/api/v1/indicators/url/{url}/{section}")
         response.raise_for_status()
@@ -146,7 +146,7 @@ try:
 
     for url in urls:
         for section in sections:
-            data = fetch_url_data(url, section)
+            data = fetch_data(url, section)
             if data is None:
                 break
             elif full_data:

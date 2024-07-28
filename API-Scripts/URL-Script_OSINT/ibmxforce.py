@@ -96,17 +96,18 @@ def parse_args(args):
                     sections = set(section_map.values())
                 elif flag in section_map:
                     sections.append(section_map[flag])
-        elif re.search(r'^https?:', arg):
-            print(f"{arg} is not a valid URL")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     
     return url, full_data, url_file, sections
 
-def fetch_url_data(target):
+def fetch_data(target):
     try:
         encoded_url = quote(target)
         response = requests.get(f"{base_url_xf}/{section}/{encoded_url}", headers=headers)
@@ -134,7 +135,7 @@ try:
 
     for url in urls:
         for section in sections:
-            data = fetch_url_data(url)
+            data = fetch_data(url)
             if data is None:
                 break
             elif full_data:

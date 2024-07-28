@@ -76,17 +76,18 @@ def parse_args(args):
             for flag in arg[1:]:
                 if flag == 'f':
                     full_data = True
-        elif re.search(r'^[a-f0-9]{5,}:', arg):
-            print(f"{arg} is not a valid Hash")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     
     return hash, full_data, hash_file
 
-def fetch_url_data(hash):
+def fetch_data(hash):
     try:
         response = requests.get(f"https://api.xforce.ibmcloud.com/malware/{hash}", headers=headers)
         response.raise_for_status()
@@ -111,7 +112,7 @@ try:
         hashes = [hash]
 
     for hash in hashes:
-            data = fetch_url_data(hash)
+            data = fetch_data(hash)
             if data is None:
                 break
             elif full_data:

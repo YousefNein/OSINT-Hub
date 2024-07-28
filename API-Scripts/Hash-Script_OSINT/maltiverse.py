@@ -82,17 +82,18 @@ def parse_args(args):
             full_data = True
         elif arg.startswith("--file="):
             hash_file = arg.split("=", 1)[1]
-        elif re.search(r'^[a-f0-9]{5,}:', arg):
-            print(f"{arg} is not a valid hash")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     
     return hash, full_data, hash_file
 
-def fetch_url_data(hash):
+def fetch_data(hash):
     hashType = is_valid_hash(hash)
     try:
         hash = f'https://api.maltiverse.com/sample/{hashType}/{hash}'
@@ -119,7 +120,7 @@ try:
         hashes = [hash]
 
     for hash in hashes:
-        data = fetch_url_data(hash)
+        data = fetch_data(hash)
 
         if data is None:
             break

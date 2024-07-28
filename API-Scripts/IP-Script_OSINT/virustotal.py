@@ -31,13 +31,15 @@ def filter_data(data):
     attributes = data.get("data", {}).get("attributes", {})
     last_analysis_stats = attributes.get("last_analysis_stats", {})
     last_analysis_date = attributes.get("last_analysis_date")
-    last_analysis_date = datetime.fromtimestamp(last_analysis_date).strftime('%Y-%m-%d')
+    if last_analysis_date is not None:
+        last_analysis_date = datetime.fromtimestamp(last_analysis_date).strftime('%Y-%m-%d') 
 
     filtered_data = {
         "IP": data.get('data', {}).get('id'),
         "AS Name": attributes.get("as_owner"),
         "Country": attributes.get("country"),
         "Network": attributes.get("network"),
+        "Reputation": attributes.get("reputation"),
         "Last Analysis": last_analysis_date,
         "Harmless": last_analysis_stats.get("harmless", 0),
         "Malicious": last_analysis_stats.get("malicious", 0),
@@ -63,11 +65,12 @@ def parse_args(args):
             full_data = True
         elif arg.startswith("--file="):
             ip_file = arg.split("=", 1)[1]
-        elif re.search(r'[0-9]{1,4}', arg):
-            print(f"{arg} is not a valid IPv4 address")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     

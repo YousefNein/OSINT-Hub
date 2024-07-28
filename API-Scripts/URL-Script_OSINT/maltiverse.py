@@ -75,17 +75,18 @@ def parse_args(args):
             full_data = True
         elif arg.startswith("--file="):
             url_file = arg.split("=", 1)[1]
-        elif re.search(r'^https?:', arg):
-            print(f"{arg} is not a valid IPv4 address")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     
     return url, full_data, url_file
 
-def fetch_url_data(url_checksum):
+def fetch_data(url_checksum):
     try:
         url = f'https://api.maltiverse.com/url/{url_checksum}'
         response = requests.get(url, headers=headers)
@@ -112,7 +113,7 @@ try:
 
     for url in urls:
         url_checksum = hashlib.sha256(url.encode("utf-8")).hexdigest()
-        data = fetch_url_data(url_checksum)
+        data = fetch_data(url_checksum)
 
         if data is None:
             break

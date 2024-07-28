@@ -131,7 +131,7 @@ def parse_args(args):
     
     return hash, full_data, hash_file, sections
 
-def fetch_url_data(hash, section):
+def fetch_data(hash, section):
     try:
         response = requests.post(f"https://otx.alienvault.com/api/v1/indicators/file/{hash}/{section}")
         response.raise_for_status()
@@ -158,7 +158,7 @@ try:
 
     for hash in hashes:
         for section in sections:
-            data = fetch_url_data(hash, section)
+            data = fetch_data(hash, section)
             if data is None:
                 break
             elif full_data:

@@ -16,8 +16,6 @@ headers = {
     'x-apikey': os.environ.get("VIRUS_TOTAL_API")
 }
 
-base_url = "https://www.virustotal.com/api/v3"
-
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
     return formatted_data
@@ -38,19 +36,22 @@ def filter_data(data):
     if data is None:
         return None
     
-    attributes = data.get("data", {}).get("attributes", {})
-    date = attributes.get("date")
+    attributes = data.get("data", {}).get("attributes")
+    date = attributes.get("last_analysis_date")
     date = datetime.fromtimestamp(date).strftime('%Y-%m-%d')
 
     filtered_data = {
-        "Hash": data.get("meta", {}).get("url_info", {}).get("hash"),
-        "Date": date,
-        "Harmless": attributes.get("stats",{}).get("harmless", 0),
-        "Malicious": attributes.get("stats",{}).get("malicious", 0),
-        "Suspicious": attributes.get("stats",{}).get("suspicious", 0),
-        "Undetected": attributes.get("stats",{}).get("undetected", 0),
-        "Timeout": attributes.get("stats",{}).get("timeout", 0),
-        "File Info": data.get("meta", {}).get("file_info", {})
+        "Hash": hash,
+        "Name" : attributes.get("meaningful_name"),
+        "Last Analysis Date" : date,
+        "Tags" : attributes.get("tags"),
+        "Size" : attributes.get("size"),
+        "Harmless" : attributes.get("last_analysis_stats", {}).get("harmless"),
+        "Malicious" : attributes.get("last_analysis_stats", {}).get("malicious"),
+        "Suspicious" : attributes.get("last_analysis_stats", {}).get("suspicious"),
+        "Timeout" : attributes.get("last_analysis_stats", {}).get("timeout"),
+        "Undetected" : attributes.get("last_analysis_stats", {}).get("undetected"),
+        "Threat Label" : attributes.get("popular_threat_classification", {}).get("suggested_threat_label")
     }
     return filtered_data
 
@@ -59,7 +60,6 @@ def parse_args(args):
     full_data = False
     hash_file = None
     help = "usage: ./virustotal.py <hash|id> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.virustotal.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an Hash or IDs on each line."
-    analysis_id = None
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -67,59 +67,47 @@ def parse_args(args):
             sys.exit(0)
         elif is_valid_hash(arg):
             hash = arg
-        elif re.match(r'^u-[0-9a-f]{64}-[0-9]{10}$', arg):
-            analysis_id = arg
         elif arg == '-f':
             full_data = True
         elif arg.startswith("--file="):
             hash_file = arg.split("=", 1)[1]
-        elif re.search(r'^[a-f0-9]{5,}:', arg):
-            print(f"{arg} is not a valid Hash")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     
-    return hash, full_data, hash_file, analysis_id
+    return hash, full_data, hash_file
 
-def fetch_url_data(target):
+def fetch_data(hash):
     try:
-        if is_valid_hash(target):
-            payload = {"hash": target}
-            response = requests.post(f"{base_url}/hashes", data=payload, headers=headers)
-            response.raise_for_status()
-            response = response.json()
-            analysis_id = response.get("data", {}).get("id")
-            print("Analysing the Hash...\n")
-        else:
-            analysis_id = target
-        while True:
-            response = requests.get(f"{base_url}/analyses/{analysis_id}", headers=headers)
-            response.raise_for_status()
-            data = response.json()
-            if data.get("data", {}).get("attributes", {}).get("status") != "queued":
-                return data
-            sleep(5)
+        response = requests.get(f"https://www.virustotal.com/api/v3/files/{hash}", headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        return data
+
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
         print(response.json())
 
 try:
-    hash, full_data, hash_file, analysis_id = parse_args(sys.argv[1:])
+    hash, full_data, hash_file = parse_args(sys.argv[1:])
 
-    if not hash and not hash_file and not analysis_id:
+    if not hash and not hash_file:
         hash = input("Enter your Hash here:\n")
         full_data = input("Do you want the full data to be shown? Y/n\n").lower() in ['y', 'yes', '']
 
     if hash_file:
         with open(hash_file, 'r') as file:
-            hashes = [line.strip() for line in file if is_valid_hash(line.strip()) or re.match(r'^u-[0-9a-f]{64}-[0-9]{10}$', line.strip())]
+            hashes = [line.strip() for line in file if is_valid_hash(line.strip())]
     else:
         hashes = [hash]
 
     for hash in hashes:
-        data = fetch_url_data(hash or analysis_id)
+        data = fetch_data(hash)
         if data is None:
             break
         elif full_data:

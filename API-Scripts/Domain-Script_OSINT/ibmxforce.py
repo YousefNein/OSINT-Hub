@@ -66,12 +66,12 @@ def parse_args(args):
             full_data = True
         elif arg.startswith("--file="):
             domain_file = arg.split("=", 1)[1]
-        elif re.search(r'(\.[a-zA-Z0-9-_]+))', arg):
-            print(f"{arg} is not a valid domain name")
-            print("usage: ./ibmxforce.py <domain> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line.")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     

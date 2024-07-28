@@ -72,17 +72,18 @@ def parse_args(args):
             full_data = True
         elif arg.startswith("--file="):
             url_file = arg.split("=", 1)[1]
-        elif re.search(r'^https?:', arg):
-            print(f"{arg} is not a valid URL")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     
     return url, full_data, url_file, uuid
 
-def fetch_url_data(target):
+def fetch_data(target):
     try:
         if is_valid_url(target):
             payload = {"url": target, "visibility": "public"}
@@ -118,7 +119,7 @@ try:
         urls = [url]
 
     for url in urls:
-        data = fetch_url_data(url or uuid)
+        data = fetch_data(url or uuid)
         if data is None:
             break
         elif full_data:

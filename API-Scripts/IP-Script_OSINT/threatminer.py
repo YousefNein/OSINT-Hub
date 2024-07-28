@@ -78,7 +78,7 @@ def parse_args(args):
     full_data = False
     ip_file = None
     sections = []
-    help = "usage: ./threatminer.py <ip> [-h] [-f] [-a] [-w] [-d] [-u] [-r] [-s] [-t] --file==[FILE]\n\nAn API script to gather data from https://www.threatminer.org/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f             Retrieve the API full data.\n  -a             Retrieve all data.\n  -w             Retrieve WHOIS data.\n  -d             Retrieve Passive DNS data.\n  -u             Retrieve URIs.\n  -r             Retrieve Related Samples (Hash only).\n  -s             Retrieve SSL Certificates (Hash only).\n  -t             Retrieve Report tagging data.\n  --file==[FILE] Full path to a test file containing an IP address on each line."
+    help = "usage: ./threatminer.py <ip> [-h] [-f] [-a] [-w] [-d] [-u] [-r] [-s] [-t] --file==[FILE]\n\nAn API script to gather data from https://www.threatminer.org/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f             Retrieve the API full data.\n  -a             Retrieve all sections data.\n  -w             Retrieve WHOIS data.\n  -d             Retrieve Passive DNS data.\n  -u             Retrieve URIs.\n  -r             Retrieve Related Samples (Hash only).\n  -s             Retrieve SSL Certificates (Hash only).\n  -t             Retrieve Report tagging data.\n  --file==[FILE] Full path to a test file containing an IP address on each line."
 
     section_map = {
         'w': '1',

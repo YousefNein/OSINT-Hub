@@ -12,47 +12,44 @@ load_dotenv()
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
     return formatted_data
+
 def is_valid_hash(hash):
     patterns = {
-        'md5': r'^[a-f0-9]{32}$',
-        'sha1': r'^[a-f0-9]{40}$',
-        'sha256': r'^[a-f0-9]{64}$',
-        'sha512': r'^[a-f0-9]{128}$'
+        'md5_hash': r'^[a-f0-9]{32}$',
+        'sha256_hash': r'^[a-f0-9]{64}$',
     }
 
-    for pattern in patterns.values():
+    for hash_type, pattern in patterns.items():
         if re.match(pattern, hash, re.IGNORECASE):
-            return True
-    return False
+            return hash_type
+    return None
 
 def filter_data(data):
     if data is None:
         return None
     
     filtered_data = {
-        "Hash": data.get("hash"),
-        "URLHaus Reference": data.get("urlhaus_reference"),
-        "Hash Status": data.get("url_status"),
-        "Host": data.get("host"),
-        "Date Added": data.get("date_added"),
-        "Last Online": data.get("last_online"),
-        "Threat": data.get("threat"),
-        "Blacklists": data.get("blacklists"),
-        "Takedown Time (seconds)": data.get("takedown_time_seconds"),
-        "Tags": data.get("tags"),
-        "Payloads": []
+        "Hash": hash,
+        "File Type" : data.get("file_type"),
+        "File Size" : data.get("file_size"),
+        "Signature" : data.get("signature"),
+        "First Seen" : data.get("firstseen"),
+        "Last Seen" : data.get("lastseen"),
+        "URL Count" : data.get("url_count"),
+        "URLHaus Download" : data.get("urlhaus_download"),
+        "VirusTotal": data.get("virustotal"),
+        "URLs": [
+            {
+                "Filename" : entry.get("filename"),
+                "URL" : entry.get("url"),
+                "URL Status" : entry.get("url_status"),
+                "First Seen" : entry.get("firstseen"),
+                "Last Seen" : entry.get("lastseen"),
+                "URLHaus Reference": entry.get("urlhaus_reference")
+            }
+        for entry in data.get("urls")]
     }
 
-    for payload in data.get("payloads", []):
-        filtered_payload = {
-            "First Seen": payload.get("firstseen"),
-            "Filename": payload.get("filename"),
-            "File Type": payload.get("file_type"),
-            "Signature": payload.get("signature"),
-            "URLHaus Download": payload.get("urlhaus_download"),
-            "VirusTotal": payload.get("virustotal")
-        }
-        filtered_data["Payloads"].append(filtered_payload)
     return filtered_data
 
 def parse_args(args):
@@ -71,20 +68,22 @@ def parse_args(args):
             full_data = True
         elif arg.startswith("--file="):
             hash_file = arg.split("=", 1)[1]
-        elif re.search(r'^[a-f0-9]{5,}:', arg):
-            print(f"{arg} is not a valid Hash")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}. Only use MD5 or SHA256")
             print(help)
             sys.exit(1)
     
     return hash, full_data, hash_file
 
-def fetch_url_data(hash):
+def fetch_data(hash):
+    hashType = is_valid_hash(hash)
     try:
-        payload = {'hash' : hash}
-        response = requests.post(f"https://urlhaus-api.abuse.ch/v1/hash", data=payload)
+        payload = {hashType : hash}
+        response = requests.post(f"https://urlhaus-api.abuse.ch/v1/payload", data=payload)
         response.raise_for_status()
         data = response.json()
         return data
@@ -107,7 +106,7 @@ try:
         hashes = [hash]
 
     for hash in hashes:
-        data = fetch_url_data(hash)
+        data = fetch_data(hash)
         if data is None:
             break
         elif full_data:

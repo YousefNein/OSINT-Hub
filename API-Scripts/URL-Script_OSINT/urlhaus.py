@@ -69,17 +69,18 @@ def parse_args(args):
             full_data = True
         elif arg.startswith("--file="):
             url_file = arg.split("=", 1)[1]
-        elif re.search(r'^https?:', arg):
-            print(f"{arg} is not a valid URL")
+        elif arg.startswith('-'):
+            print(f"Error: Unknown flag {arg}")
+            print(help)
             sys.exit(1)
         else:
-            print(f"Error: Unknown flag {arg}\n")
+            print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     
     return url, full_data, url_file
 
-def fetch_url_data(url):
+def fetch_data(url):
     try:
         payload = {'url' : url}
         response = requests.post(f"https://urlhaus-api.abuse.ch/v1/url", data=payload)
@@ -105,7 +106,7 @@ try:
         urls = [url]
 
     for url in urls:
-        data = fetch_url_data(url)
+        data = fetch_data(url)
         if data is None:
             break
         elif full_data:
