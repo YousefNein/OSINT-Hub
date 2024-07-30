@@ -40,6 +40,11 @@ whatweb - https://www.kali.org/tools/whatweb/
 sudo apt install whatweb
 ```
 
+findomain - https://github.com/Findomain/Findomain
+```bash
+git clone https://github.com/findomain/findomain.git
+```
+
 ## Online
 
 BuiltWith - https://builtwith.com/
