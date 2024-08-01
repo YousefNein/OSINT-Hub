@@ -41,7 +41,7 @@ python3 virustotal.py 8.8.8.8 -f
 | Filename          | Threat Intel Name | API Documentation                   | Flags                              | Status          | Notes                     |
 |-------------------|-------------------|-------------------------------------|------------------------------------|-----------------|---------------------------|
 | abuseipdb.py      | [AbuseIPDB](https://docs.abuseipdb.com/)  | https://docs.abuseipdb.com/ | -h, -f, --file=<file> | Ready            |                             |
-| alienvault.py     | [AlienVault](https://otx.alienvault.com/) | https://otx.alienvault.com/assets/static/external_api.html#api_v1_search | -h, -f, -g, -c, -r, -m, -d, -u, -s, a, --file=<file> | Ready |                             |
+| alienvault.py     | [AlienVault](https://otx.alienvault.com/) | https://otx.alienvault.com/assets/static/external_api.html#api_v1_search | -h, -f, -g, -c, -r, -m, -d, -u, -s, -a, --file=<file> | Ready |                             |
 | apivoid.py        | [APIVoid](https://www.apivoid.com/)       | https://docs.apivoid.com/    | -h, -f, --file=<file> | Ready            |                             |
 | censys.py         | [Censys](https://censys.io/)              | https://search.censys.io/api          | -h, -f, --file=<file> | Ready |                             |
 | fraudguard.py     | [FraudGuard](https://www.fraudguard.io/)  | https://docs.fraudguard.io/  | -h, -f, --file=<file> | Ready            |                             |
@@ -52,5 +52,5 @@ python3 virustotal.py 8.8.8.8 -f
 | maltiverse.py     | [Maltiverse](https://www.maltiverse.com/) | https://app.swaggerhub.com/apis-docs/maltiverse/api/1.1.2 | -h, -f, --file=<file> | Ready |                             |
 | proxycheck.py     | [ProxyCheck](https://proxycheck.io/)      | https://proxycheck.io/api/      | -h, -f, --file=<file> | Ready            |                             |
 | shodan.py         | [Shodan](https://www.shodan.io/)          | https://developer.shodan.io/api      | -h, -f, --file=<file> | Ready            | Lots of IPs may be found to be unavaliable due to the free API key version.                            |
-| threatminer.py    | [ThreatMiner](https://www.threatminer.org/) | https://www.threatminer.org/api.php | -h, -f, -w, -d, -u, -r, -s, -t, a,--file=<file> | Ready |                             |
-| virustotal.py     | [VirusTotal](https://www.virustotal.com/) | https://gtidocs.virustotal.com/ | -h, -f, --file=<file> | Ready            |                             |
+| threatminer.py    | [ThreatMiner](https://www.threatminer.org/) | https://www.threatminer.org/api.php | -h, -f, -w, -d, -u, -r, -s, -t, -a,--file=<file> | Ready |                             |
+| virustotal.py     | [VirusTotal](https://www.virustotal.com/) | https://docs.virustotal.com/reference/overview | -h, -f, --file=<file> | Ready            |                             |

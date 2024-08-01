@@ -40,13 +40,13 @@ python3 virustotal.py example.com -f
 
 | Filename          | Threat Intel Name | API Documentation                   | Flags                              | Status            | Notes                     |
 |-------------------|-------------------|-------------------------------------|------------------------------------|-------------------|---------------------------|
-| alienvault.py     | [AlienVault](https://otx.alienvault.com/) | https://otx.alienvault.com/assets/static/external_api.html#api_v1_search | -h, -f, -g, -c, -W, -m, -d, -u, -s, a, --file=<file> | Ready             |                             |
+| alienvault.py     | [AlienVault](https://otx.alienvault.com/) | https://otx.alienvault.com/assets/static/external_api.html#api_v1_search | -h, -f, -g, -c, -W, -m, -d, -u, -s, -a, --file=<file> | Ready             |                             |
 | apivoid.py        | [APIVoid](https://www.apivoid.com/)       | https://docs.apivoid.com/    | -h, -f, --file=<file> | Ready            |                             |
 | censys.py         | [Censys](https://censys.io/)              | https://search.censys.io/api          | -h, -f, --file=<file> | Ready            |                             |
-| hostinfo.py       | [HostInfo](https://host.io/)              | https://host.io/docs/api | -h, -f, w, d, r, a, --file=<file> | Ready            |                             |
+| hostinfo.py       | [HostInfo](https://host.io/)              | https://host.io/docs/api | -h, -f, w, d, r, -a, --file=<file> | Ready            |                             |
 | ibmxforce.py      | [IBM X-Force](https://exchange.xforce.ibmcloud.com/) | https://api.xforce.ibmcloud.com/doc/ | -h, -f, --file=<file> | Ready |                             |
 | maltiverse.py     | [Maltiverse](https://www.maltiverse.com/) | https://app.swaggerhub.com/apis-docs/maltiverse/api/1.1.2 | -h, -f, --file=<file> | Ready            | Only checks for the hostnames.                             |
-| sectrails.py      | [SecurityTrails](https://securitytrails.com/) | https://docs.securitytrails.com/docs | -h, -f, -d, -s, --file=<file> | Ready            |                             |
+| sectrails.py      | [SecurityTrails](https://securitytrails.com/) | https://docs.securitytrails.com/docs | -h, -f, -d, -s, -a, --file=<file> | Ready            |                             |
 | shodan.py         | [Shodan](https://www.shodan.io/)          | https://developer.shodan.io/api      | -h, -f, --file=<file> | Ready            | Only checks for the hostnames and will probably need a premium API key.                            |
-| threatminer.py    | [ThreatMiner](https://www.threatminer.org/) | https://www.threatminer.org/api.php | -h, -f, -w, -d, -u, -r, -s, -t, a,--file=<file> | Ready            |                             |
-| virustotal.py     | [VirusTotal](https://www.virustotal.com/) | https://gtidocs.virustotal.com/ | -h, -f, --file=<file> | Ready            |                             |
+| threatminer.py    | [ThreatMiner](https://www.threatminer.org/) | https://www.threatminer.org/api.php | -h, -f, -w, -d, -u, -r, -s, -t, -a,--file=<file> | Ready            |                             |
+| virustotal.py     | [VirusTotal](https://www.virustotal.com/) | https://docs.virustotal.com/reference/overview | -h, -f, --file=<file> | Ready            |                             |
