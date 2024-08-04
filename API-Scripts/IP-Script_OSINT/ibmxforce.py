@@ -58,7 +58,14 @@ def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
+    sections = []
     help = "usage: ./ibmxforce.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
+    
+    section_map = {
+        'r': '', # report
+        's': "/history/",
+        'm': "/malware/"
+    }
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -79,10 +86,11 @@ def parse_args(args):
             print(help)
             sys.exit(1)
     
-    return ip, full_data, ip_file
+    return ip, full_data, ip_file, sections
 
 try:
-    ip, full_data, ip_file = parse_args(sys.argv[1:])
+    ip, full_data, ip_file, sections = parse_args(sys.argv[1:])
+    sections = sections or [""]
 
     if not ip and not ip_file:
         ip = input("Enter your IP address here:\n")
@@ -99,17 +107,18 @@ try:
             print(f"{ip} is not a valid IPv4 address")
             continue
 
-        url = f'https://api.xforce.ibmcloud.com/api/ipr/{ip}'
-        response = requests.get(url=url, headers=headers)
-        
-        response.raise_for_status()
-        parsed = json.loads(response.text)
+        for section in sections:
+            url = f'https://api.xforce.ibmcloud.com/api/ipr/{section}{ip}'
+            response = requests.get(url=url, headers=headers)
 
-        if full_data:
-            print(format_data(parsed))
-        else:
-            filtered_response = filter_data(parsed)
-            print(format_data(filtered_response))
+            response.raise_for_status()
+            parsed = json.loads(response.text)
+
+            if full_data:
+                print(format_data(parsed))
+            else:
+                filtered_response = filter_data(parsed)
+                print(format_data(filtered_response))
 
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")

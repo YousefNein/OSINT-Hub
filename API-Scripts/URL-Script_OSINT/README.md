@@ -5,6 +5,11 @@ This repository contains various scripts for gathering threat intelligence relat
 ## How to Use
 
 1. **Set Up Environment Variables:**
+   - Copy .env.copy in the API-Scripts directory if you haven't done that already.
+    ```bash
+    cp env.copy .env
+    ```
+
    - Add your API keys in the `.env` file with the appropriate variable names, for example:
      ```
      VIRUS_TOTAL_API=your_virustotal_api_key
