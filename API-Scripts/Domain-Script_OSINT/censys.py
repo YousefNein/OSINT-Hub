@@ -5,13 +5,19 @@ import os
 import sys
 import json
 import re
+import base64
 from dotenv import load_dotenv
 
 load_dotenv()
 
+api_key = os.environ.get("CENSYS_API_KEY")
+api_key_password = os.environ.get("CENSYS_API_SECRET")
+credentials = f"{api_key}:{api_key_password}"
+encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
 headers = {
     'Accept': 'application/json',
-    'Authorization': os.environ.get("CENSYS_API")
+    'Authorization': f"Basic {encoded_credentials}"
 }
 
 def format_data(data):

@@ -34,25 +34,52 @@ def filter_data(data):
     if data is None:
         return None
 
-    max_score_ip = max(data["history"], key=lambda x: x.get('score', 0))
-    categories = data.get("cats")
-    category_descriptions = data.get("categoryDescriptions")
-    if not categories or not category_descriptions:    
-        categories = max_score_ip["cats"]
-    category_descriptions = max_score_ip["categoryDescriptions"]
-    filtered_data = {
-        "IP": data.get("ip"),
-        "Country": data.get("geo").get("country"),
-        "Network": max_score_ip["ip"],
-        "First seen": max_score_ip["created"],
-        "Reports count": len(data.get("history", [])),
-        "Score": data.get("score"),
-        "Max score": max_score_ip["score"],
-        "Categories": data.get("cats"),
-        "Category Description": category_descriptions,
-        "Reason": max_score_ip["reasonDescription"]
-    }
-    return filtered_data
+    section_data = {}
+
+    if section == "":
+        max_score_ip = max(data["history"], key=lambda x: x.get('score', 0))
+        categories = data.get("cats")
+        category_descriptions = data.get("categoryDescriptions")
+        if not categories or not category_descriptions:
+            categories = max_score_ip["cats"]
+        category_descriptions = max_score_ip["categoryDescriptions"]
+
+        section_data["Report"] = {
+            "IP": data.get("ip"),
+            "Country": data.get("geo").get("country"),
+            "Network": max_score_ip["ip"],
+            "First seen": max_score_ip["created"],
+            "Reports count": len(data.get("history", [])),
+            "Score": data.get("score"),
+            "Max score": max_score_ip["score"],
+            "Categories": data.get("cats"),
+            "Category Description": category_descriptions,
+            "Reason": max_score_ip["reasonDescription"]
+        }
+
+    elif section == "/malware":
+            section_data["Malware"] = {
+                "IP": ip,
+                "Data": [
+                    {
+                        "Type": entry.get("type"),
+                        "MD5": entry.get("md5"),
+                        "Host": entry.get("host"),
+                        "FirstSeen": entry.get("firstseen"),
+                        "Last Seen": entry.get("lastseen"),
+                        "Count": entry.get("count"),
+                        "Filepath": entry.get("filepath"),
+                        "URI": entry.get("uri"),
+                        "Origin": entry.get("origin"),
+                        "Family": entry.get("family"),
+                    }
+                    for entry in data.get("malware", [])
+                ],
+            }
+
+    section_data.update(section_data)
+
+    return section_data
 
 def parse_args(args):
     ip = None
@@ -63,8 +90,8 @@ def parse_args(args):
     
     section_map = {
         'r': '', # report
-        's': "/history/",
-        'm': "/malware/"
+        # 's': "/history",
+        'm': "/malware"
     }
 
     for arg in args:
@@ -73,16 +100,25 @@ def parse_args(args):
             sys.exit(0)
         elif is_valid_ipv4(arg):
             ip = arg
-        elif arg == '-f':
-            full_data = True
         elif arg.startswith("--file="):
             ip_file = arg.split("=", 1)[1]
         elif arg.startswith('-'):
-            print(f"Error: Unknown flag {arg}")
-            print(help)
+            for flag in arg[1:]:
+                if flag == 'f':
+                    full_data = True
+                elif flag == 'a':
+                    sections = set(section_map.values())
+                elif flag in section_map:
+                    sections.append(section_map[flag])
+                else:
+                    print(f"Error: Unknown flag -{flag}")
+                    print(help)
+                    sys.exit(1)
+        elif re.search(r'[0-9]{1,4}', arg):
+            print(f"{arg} is not a valid IPv4 address")
             sys.exit(1)
         else:
-            print(f"Error: Unknown input {arg}")
+            print(f"Error: Unknown input {arg}\n")
             print(help)
             sys.exit(1)
     
@@ -108,7 +144,7 @@ try:
             continue
 
         for section in sections:
-            url = f'https://api.xforce.ibmcloud.com/api/ipr/{section}{ip}'
+            url = f'https://api.xforce.ibmcloud.com/api/ipr{section}/{ip}'
             response = requests.get(url=url, headers=headers)
 
             response.raise_for_status()
