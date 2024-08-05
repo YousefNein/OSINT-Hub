@@ -17,6 +17,11 @@ This repository contains various scripts for gathering threat intelligence relat
      Use the links that are next to every threat intel name to generate an API key.
 
 2. **Run a Script:**
+   - First you will need to install the requirements in the API-Scripts directory:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
    - You can run any script by using Python. For example, to run the `virustotal.py` script, use the following command:
      ```python
      python3 virustotal.py <domain> [-f] [--file=<file>]

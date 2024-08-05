@@ -17,6 +17,11 @@ This repository contains various scripts for gathering threat intelligence relat
      Use the links that are next to every threat intel name to generate an API key.
 
 2. **Run a Script:**
+   - First you will need to install the requirements in the API-Scripts directory:
+    ```bash
+    pip install -r requirements.txt
+    ```
+   
    - You can run any script by using Python. For example, to run the `virustotal.py` script, use the following command:
      ```python
      python3 virustotal.py <ip> [-f] [--file=<file>]
@@ -51,7 +56,7 @@ python3 virustotal.py 8.8.8.8 -f
 | censys.py         | [Censys](https://censys.io/)              | https://search.censys.io/api          | -h, -f, --file=<file> | Ready |                             |
 | fraudguard.py     | [FraudGuard](https://www.fraudguard.io/)  | https://docs.fraudguard.io/  | -h, -f, --file=<file> | Ready            |                             |
 | greynoise.py      | [GreyNoise](https://www.greynoise.io/)    | https://docs.greynoise.io/   | -h, -f, --file=<file> | Ready            | Community and enterprise data parsing version are avaliable. Make sure to activiate the one you want by commenting/uncommenting.                            |
-| ibmxforce.py      | [IBM X-Force](https://exchange.xforce.ibmcloud.com/) | https://api.xforce.ibmcloud.com/doc/ | -h, -f, --file=<file> | Under construction |                             |
+| ibmxforce.py      | [IBM X-Force](https://exchange.xforce.ibmcloud.com/) | https://api.xforce.ibmcloud.com/doc/ | -h, -f, --file=<file> | Ready |                             |
 | ipdata.py         | [IPData](https://ipdata.co/)              | https://docs.ipdata.co/docs/          | -h, -f, --file=<file> | Ready            |                             |
 | ipinfo.py         | [IPInfo](https://ipinfo.io/)              | https://ipinfo.io/developers          | -h, -f, --file=<file> | Ready            |                             |
 | maltiverse.py     | [Maltiverse](https://www.maltiverse.com/) | https://app.swaggerhub.com/apis-docs/maltiverse/api/1.1.2 | -h, -f, --file=<file> | Ready |                             |
