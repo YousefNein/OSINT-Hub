@@ -14,4 +14,4 @@ Simple File Analysis | Malcore - https://malcore.io/
 
 Simulate any Browser | WannaBrowser - https://www.wannabrowser.net/
 
-The Container Streaming Platform | Kasm Workspaces - https://www.wannabrowser.net/
+The Container Streaming Platform | Kasm Workspaces - https://kasmweb.com/
