@@ -48,19 +48,20 @@ python3 virustotal.py 8.8.8.8 -f
 
 ## Script Table
 
-| Filename          | Threat Intel Name | API Documentation                   | Flags                              | Status          | Notes                     |
-|-------------------|-------------------|-------------------------------------|------------------------------------|-----------------|---------------------------|
-| abuseipdb.py      | [AbuseIPDB](https://docs.abuseipdb.com/)  | https://docs.abuseipdb.com/ | -h, -f, --file=<file> | Ready            |                             |
-| alienvault.py     | [AlienVault](https://otx.alienvault.com/) | https://otx.alienvault.com/assets/static/external_api.html#api_v1_search | -h, -f, -g, -c, -r, -m, -d, -u, -s, -a, --file=<file> | Ready |                             |
-| apivoid.py        | [APIVoid](https://www.apivoid.com/)       | https://docs.apivoid.com/    | -h, -f, --file=<file> | Ready            |                             |
-| censys.py         | [Censys](https://censys.io/)              | https://search.censys.io/api          | -h, -f, --file=<file> | Ready |                             |
-| fraudguard.py     | [FraudGuard](https://www.fraudguard.io/)  | https://docs.fraudguard.io/  | -h, -f, --file=<file> | Ready            |                             |
-| greynoise.py      | [GreyNoise](https://www.greynoise.io/)    | https://docs.greynoise.io/   | -h, -f, --file=<file> | Ready            | Community and enterprise data parsing version are avaliable. Make sure to activiate the one you want by commenting/uncommenting.                            |
-| ibmxforce.py      | [IBM X-Force](https://exchange.xforce.ibmcloud.com/) | https://api.xforce.ibmcloud.com/doc/ | -h, -f, --file=<file> | Ready |                             |
-| ipdata.py         | [IPData](https://ipdata.co/)              | https://docs.ipdata.co/docs/          | -h, -f, --file=<file> | Ready            |                             |
-| ipinfo.py         | [IPInfo](https://ipinfo.io/)              | https://ipinfo.io/developers          | -h, -f, --file=<file> | Ready            |                             |
-| maltiverse.py     | [Maltiverse](https://www.maltiverse.com/) | https://app.swaggerhub.com/apis-docs/maltiverse/api/1.1.2 | -h, -f, --file=<file> | Ready |                             |
-| proxycheck.py     | [ProxyCheck](https://proxycheck.io/)      | https://proxycheck.io/api/      | -h, -f, --file=<file> | Ready            |                             |
-| shodan.py         | [Shodan](https://www.shodan.io/)          | https://developer.shodan.io/api      | -h, -f, --file=<file> | Ready            | Lots of IPs may be found to be unavaliable due to the free API key version.                            |
-| threatminer.py    | [ThreatMiner](https://www.threatminer.org/) | https://www.threatminer.org/api.php | -h, -f, -w, -d, -u, -r, -s, -t, -a,--file=<file> | Ready |                             |
-| virustotal.py     | [VirusTotal](https://www.virustotal.com/) | https://docs.virustotal.com/reference/overview | -h, -f, --file=<file> | Ready            |                             |
+| Filename          | Threat Intel Name | API Documentation                   | Flags                              | Notes                                                                                             |
+|-------------------|-------------------|-------------------------------------|------------------------------------|---------------------------------------------------------------------------------------------------|
+| abuseipdb.py      | [AbuseIPDB](https://docs.abuseipdb.com/)  | [API Docs](https://docs.abuseipdb.com/) | -h, -f, --file=<file> |                                                                                                   |
+| alienvault.py     | [AlienVault](https://otx.alienvault.com/) | [API Docs](https://otx.alienvault.com/assets/static/external_api.html#api_v1_search) | -h, -f, -g, -c, -r, -m, -d, -u, -s, -a, --file=<file> |                                                                                                   |
+| apivoid.py        | [APIVoid](https://www.apivoid.com/)       | [API Docs](https://docs.apivoid.com/)    | -h, -f, --file=<file> |                                                                                                   |
+| censys.py         | [Censys](https://censys.io/)              | [API Docs](https://search.censys.io/api)          | -h, -f, --file=<file> |                                                                                                   |
+| fraudguard.py     | [FraudGuard](https://www.fraudguard.io/)  | [API Docs](https://docs.fraudguard.io/)  | -h, -f, --file=<file> |                                                                                                   |
+| greynoise.py      | [GreyNoise](https://www.greynoise.io/)    | [API Docs](https://docs.greynoise.io/)   | -h, -f, --file=<file> | Community and enterprise data parsing version are available. Make sure to activate the one you want by commenting/uncommenting. |
+| ibmxforce.py      | [IBM X-Force](https://exchange.xforce.ibmcloud.com/) | [API Docs](https://api.xforce.ibmcloud.com/doc/) | -h, -f, --file=<file> |                                                                                                   |
+| ipdata.py         | [IPData](https://ipdata.co/)              | [API Docs](https://docs.ipdata.co/docs/)          | -h, -f, --file=<file> |                                                                                                   |
+| ipinfo.py         | [IPInfo](https://ipinfo.io/)              | [API Docs](https://ipinfo.io/developers)          | -h, -f, --file=<file> |                                                                                                   |
+| maltiverse.py     | [Maltiverse](https://www.maltiverse.com/) | [API Docs](https://app.swaggerhub.com/apis-docs/maltiverse/api/1.1.2) | -h, -f, --file=<file> |                                                                                                   |
+| proxycheck.py     | [ProxyCheck](https://proxycheck.io/)      | [API Docs](https://proxycheck.io/api/)      | -h, -f, --file=<file> |                                                                                                   |
+| shodan.py         | [Shodan](https://www.shodan.io/)          | [API Docs](https://developer.shodan.io/api)      | -h, -f, --file=<file> | Lots of IPs may be found to be unavailable due to the free API key version.                     |
+| threatminer.py    | [ThreatMiner](https://www.threatminer.org/) | [API Docs](https://www.threatminer.org/api.php) | -h, -f, -w, -d, -u, -r, -s, -t, -a,--file=<file> |                                                                                                   |
+| virustotal.py     | [VirusTotal](https://www.virustotal.com/) | [API Docs](https://docs.virustotal.com/reference/overview) | -h, -f, --file=<file> |                                                                                                   |
+| spamhaus.py     | [VirusTotal](https://spamhaus.com/) | [API Docs](https://docs.spamhaus.com/) | -h, -f, --file=<file> |                                                                                                   |
