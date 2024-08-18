@@ -40,8 +40,12 @@ def filter_data(data):
     date = attributes.get("date")
     date = datetime.fromtimestamp(date).strftime('%Y-%m-%d')
 
-    filtered_data = {
+    section_data = {}
+
+    if section == "":
+        section_data["General"] = {
         "URL": data.get("meta", {}).get("url_info", {}).get("url"),
+        "URL-ID": data.get("data").get("id"),
         "Date": date,
         "Harmless": attributes.get("stats",{}).get("harmless", 0),
         "Malicious": attributes.get("stats",{}).get("malicious", 0),
@@ -49,15 +53,72 @@ def filter_data(data):
         "Undetected": attributes.get("stats",{}).get("undetected", 0),
         "Timeout": attributes.get("stats",{}).get("timeout", 0),
         "File Info": data.get("meta", {}).get("file_info", {})
-    }
-    return filtered_data
+        }
+
+    elif section == "behaviours":
+        attributes = data.get("data", {}).get("attributes", {})
+        section_data["Behaviours"] = {
+            "Analysis Date": datetime.fromtimestamp(attributes.get("analysis_date", 0)).strftime('%Y-%m-%d %H:%M:%S'),
+            "Cookies": attributes.get("cookies", []),
+            "DOM Info": {
+                "Title": attributes.get("dom_info", {}).get("title", ""),
+                "Meta": attributes.get("dom_info", {}).get("meta", []),
+                "Trackers": attributes.get("dom_info", {}).get("trackers", []),
+                "Links": attributes.get("dom_info", {}).get("links", [])
+            },
+            "JavaScript Variables": attributes.get("javascript_variables", []),
+            "Metrics": {
+                "Array Buffer Contents": attributes.get("metrics", {}).get("array_buffer_contents", 0),
+                "Task Duration": attributes.get("metrics", {}).get("task_duration", 0.0),
+                "Nodes": attributes.get("metrics", {}).get("nodes", 0),
+                "Frames": attributes.get("metrics", {}).get("frames", 0),
+                "Process Time": attributes.get("metrics", {}).get("process_time", 0.0),
+                "Event Listeners": attributes.get("metrics", {}).get("event_listeners", 0),
+                "Script Duration": attributes.get("metrics", {}).get("script_duration", 0.0)
+            },
+            "Stats": {
+                "Number of Requests": attributes.get("stats", {}).get("num_requests", 0),
+                "Number of Cookies": attributes.get("stats", {}).get("num_cookies", 0),
+                "Requests Distinct Subdomains": attributes.get("stats", {}).get("requests_distinct_subdomains", 0),
+                "Requests Total Size": attributes.get("stats", {}).get("requests_total_size", 0),
+                "Requests Distinct Countries": attributes.get("stats", {}).get("requests_distinct_countries", 0),
+                "HTTP Requests": attributes.get("stats", {}).get("http_requests", 0),
+                "Requests Distinct Domains": attributes.get("stats", {}).get("requests_distinct_domains", 0),
+                "IPv6 Addresses": attributes.get("stats", {}).get("ipv6_adresses", 0),
+                "IPv4 Addresses": attributes.get("stats", {}).get("ipv4_adresses", 0),
+                "HTTPS Requests": attributes.get("stats", {}).get("https_requests", 0)
+            },
+            "URL": attributes.get("url", ""),
+            "User Agent": attributes.get("user_agent", "")
+        }
+
+
+    section_data.update(section_data)
+
+    return section_data
 
 def parse_args(args):
     url = None
     full_data = False
     url_file = None
-    help = "usage: ./virustotal.py <url|id> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.virustotal.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an URL or IDs on each line."
+    sections = []
+    help = """usage: ./virustotal.py <url|id> [-h] [-f] --file=[FILE]
+
+An API script to gather data from https://www.virustotal.com/
+
+optional arguments:
+  -h, --help          Show this help message and exit.
+  -f                  Retrieve the API full data.
+  --file=[FILE]       Full path to a file containing URLs or IDs on each line.
+  -g                  Retrieve general data (default if no section is specified).
+  -a                  Retrieve all sections of data.
+  -b                  Retrieve behavioral data for the URL (requires URL ID)."""
+
     analysis_id = None
+    section_map = {
+        'g': "",
+        'b': "behaviours"
+    }
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -67,22 +128,28 @@ def parse_args(args):
             url = arg
         elif re.match(r'^u-[0-9a-f]{64}-[0-9]{10}$', arg):
             analysis_id = arg
-        elif arg == '-f':
-            full_data = True
         elif arg.startswith("--file="):
             url_file = arg.split("=", 1)[1]
         elif arg.startswith('-'):
-            print(f"Error: Unknown flag {arg}")
-            print(help)
-            sys.exit(1)
+            for flag in arg[1:]:
+                if flag == 'f':
+                    full_data = True
+                elif flag == 'a':
+                    sections = set(section_map.values())
+                elif flag in section_map:
+                    sections.append(section_map[flag])
+                else:
+                    print(f"Error: Unknown flag -{flag}")
+                    print(help)
+                    sys.exit(1)
         else:
             print(f"Error: Unknown input {arg}")
             print(help)
             sys.exit(1)
     
-    return url, full_data, url_file, analysis_id
+    return url, full_data, url_file, analysis_id, sections
 
-def fetch_data(target):
+def fetch_data(target, section):
     try:
         if is_valid_url(target):
             payload = {"url": target}
@@ -93,19 +160,27 @@ def fetch_data(target):
             print("Analysing the URL...\n")
         else:
             analysis_id = target
-        while True:
-            response = requests.get(f"{base_url}/analyses/{analysis_id}", headers=headers)
+        if section == "behaviours":
+            analysis_id = analysis_id.replace("u-", "", 1)
+            response = requests.get(f"{base_url}/urls/{analysis_id}/{section}", headers=headers)
             response.raise_for_status()
             data = response.json()
-            if data.get("data", {}).get("attributes", {}).get("status") != "queued":
-                return data
-            sleep(5)
+            return data
+        else:    
+            while True:
+                response = requests.get(f"{base_url}/analyses/{analysis_id}", headers=headers)
+                response.raise_for_status()
+                data = response.json()
+                if data.get("data", {}).get("attributes", {}).get("status") != "queued":
+                    return data
+                sleep(5)
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
         print(response.json())
 
 try:
-    url, full_data, url_file, analysis_id = parse_args(sys.argv[1:])
+    url, full_data, url_file, analysis_id, sections = parse_args(sys.argv[1:])
+    sections = sections or [""]
 
     if not url and not url_file and not analysis_id:
         url = input("Enter your URL here:\n")
@@ -118,14 +193,15 @@ try:
         urls = [url]
 
     for url in urls:
-        data = fetch_data(url or analysis_id)
-        if data is None:
-            break
-        elif full_data:
-            print(format_data(data))
-        else:
-            filtered_response = filter_data(data)
-            print(format_data(filtered_response))
+        for section in sections:
+            data = fetch_data(url or analysis_id, section)
+            if data is None:
+                break
+            elif full_data:
+                print(format_data(data))
+            else:
+                filtered_response = filter_data(data)
+                print(format_data(filtered_response))
 
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")

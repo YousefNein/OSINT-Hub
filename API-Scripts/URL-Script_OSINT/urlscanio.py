@@ -57,7 +57,7 @@ def parse_args(args):
     url = None
     full_data = False
     url_file = None
-    help = "usage: ./urlscan.py <url|uuid> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://urlscan.io/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file=[FILE]   Full path to a test file containing an URL on each line."
+    help = "usage: ./urlscan.py <url|uuid> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://urlscan.io/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f              Retrieve the API full data.\n  --file=[FILE]   Full path to a test file containing an URL on each line."
     uuid = None
 
     for arg in args:

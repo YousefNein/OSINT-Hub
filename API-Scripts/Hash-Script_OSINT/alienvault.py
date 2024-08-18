@@ -94,7 +94,7 @@ def parse_args(args):
     full_data = False
     hash_file = None
     sections = []
-    help = "usage: ./alienvault.py <hash> [-h] [-f] [-a] [-g] [-s] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -g              Retrieve general data. (Default)\n  -s              Retrieve hash analysis data.\n  --file==[FILE]  Full path to a test file containing a Hash on each line."
+    help = "usage: ./alienvault.py <hash> [-h] [-f] [-a] [-g] [-s] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f              Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -g              Retrieve general data. (Default)\n  -s              Retrieve hash analysis data.\n  --file==[FILE]  Full path to a test file containing a Hash on each line."
     
     section_map = {
         'g': 'general',

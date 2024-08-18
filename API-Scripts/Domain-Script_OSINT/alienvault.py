@@ -130,7 +130,7 @@ def parse_args(args):
     full_data = False
     domain_file = None
     sections = []
-    help = "usage: ./alienvault.py <domain> [-h] [-f] [-a] [-g] [-c] [-w] [-d] [-m] [-u] [-s] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -g              Retrieve general data.\n  -w              Retrieve WHOIS data.\n  -c              Retrieve Geo data.\n  -m              Retrieve Malware data.\n  -d              Retrieve Passive DNS data.\n  -u              Retrieve URL list data.\n  -s              Retrieve HTTP scans data.\n  --file==[FILE]  Full path to a test file containing a domain name on each line."
+    help = "usage: ./alienvault.py <domain> [-h] [-f] [-a] [-g] [-c] [-w] [-d] [-m] [-u] [-s] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f              Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -g              Retrieve general data.\n  -w              Retrieve WHOIS data.\n  -c              Retrieve Geo data.\n  -m              Retrieve Malware data.\n  -d              Retrieve Passive DNS data.\n  -u              Retrieve URL list data.\n  -s              Retrieve HTTP scans data.\n  --file==[FILE]  Full path to a test file containing a domain name on each line."
     
     section_map = {
         'g': "general",

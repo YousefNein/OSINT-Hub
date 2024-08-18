@@ -82,7 +82,7 @@ def parse_args(args):
     full_data = False
     url_file = None
     sections = []
-    help = "usage: ./alienvault.py <url> [-h] [-f] [-a] [-g] [-u] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -g              Retrieve general data. (Default)\n  -u              Retrieve URL list data.\n  --file==[FILE]  Full path to a test file containing a URL on each line."
+    help = "usage: ./alienvault.py <url> [-h] [-f] [-a] [-g] [-u] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f              Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -g              Retrieve general data. (Default)\n  -u              Retrieve URL list data.\n  --file==[FILE]  Full path to a test file containing a URL on each line."
     
     section_map = {
         'g': 'general',

@@ -68,7 +68,7 @@ def parse_args(args):
     full_data = False
     domain_file = None
     sections = []
-    help = "usage: ./hostinfo.py <domain> [-h] [-f] [-a] [-w] [-d] [-r] --file=[FILE]\n\nAn API script to gather data from https://host.io/\n\noptional arguments:\n  -h,  --help    Show this help message and exit.\n  -f,            Retrieve the full API data.\n  -a,            Retrieve data for all sections.\n  -w,            Retrieve web data.\n  -d,            Retrieve DNS data.\n  -r,            Retrieve related data.\n  --file=[FILE]  Full path to a test file containing a domain name on each line."
+    help = "usage: ./hostinfo.py <domain> [-h] [-f] [-a] [-w] [-d] [-r] --file=[FILE]\n\nAn API script to gather data from https://host.io/\n\noptional arguments:\n  -h,  --help    Show this help message and exit.\n  -f             Retrieve the full API data.\n  -a,            Retrieve data for all sections.\n  -w,            Retrieve web data.\n  -d,            Retrieve DNS data.\n  -r,            Retrieve related data.\n  --file=[FILE]  Full path to a test file containing a domain name on each line."
 
     section_map = {
         'a' : 'full',

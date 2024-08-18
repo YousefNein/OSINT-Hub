@@ -50,14 +50,15 @@ python3 virustotal.py example.com -f
 
 | Filename          | Threat Intel Name | API Documentation                   | Flags                              | Notes                     |
 |-------------------|-------------------|-------------------------------------|------------------------------------|---------------------------|
-| alienvault.py     | [AlienVault](https://otx.alienvault.com/) | [API Docs](https://otx.alienvault.com/assets/static/external_api.html#api_v1_search) | -h, -f, -g, -c, -W, -m, -d, -u, -s, -a, --file=<file> |                             |
-| apivoid.py        | [APIVoid](https://www.apivoid.com/)       | [API Docs](https://docs.apivoid.com/)    | -h, -f, --file=<file> |                             |
-| censys.py         | [Censys](https://censys.io/)              | [API Docs](https://search.censys.io/api)          | -h, -f, --file=<file> |                             |
-| hostinfo.py       | [HostInfo](https://host.io/)              | [API Docs](https://host.io/docs/api) | -h, -f, w, d, r, -a, --file=<file> |                             |
-| ibmxforce.py      | [IBM X-Force](https://exchange.xforce.ibmcloud.com/) | [API Docs](https://api.xforce.ibmcloud.com/doc/) | -h, -f, --file=<file> |                             |
-| maltiverse.py     | [Maltiverse](https://www.maltiverse.com/) | [API Docs](https://app.swaggerhub.com/apis-docs/maltiverse/api/1.1.2) | -h, -f, --file=<file> | Only checks for the hostnames.                             |
-| sectrails.py      | [SecurityTrails](https://securitytrails.com/) | [API Docs](https://docs.securitytrails.com/docs) | -h, -f, -d, -s, -a, --file=<file> |                             |
-| shodan.py         | [Shodan](https://www.shodan.io/)          | [API Docs](https://developer.shodan.io/api)      | -h, -f, --file=<file> | Only checks for the hostnames and will probably need a premium API key.                            |
-| threatminer.py    | [ThreatMiner](https://www.threatminer.org/) | [API Docs](https://www.threatminer.org/api.php) | -h, -f, -w, -d, -u, -r, -s, -t, -a,--file=<file> |                             |
-| virustotal.py     | [VirusTotal](https://www.virustotal.com/) | [API Docs](https://docs.virustotal.com/reference/overview) | -h, -f, --file=<file> |                             |
-| spamhaus.py       | [SPAMHAUS](https://spamhaus.com/) | [API Docs](https://docs.spamhaus.com/) | -h, -f, -g, -s, -a, -n, -i, -o, -m, -u, --file=<file> |                             |
+| alienvault.py     | [AlienVault](https://otx.alienvault.com/) | https://otx.alienvault.com/assets/static/external_api.html#api_v1_search | -h, -f, -g, -c, -W, -m, -d, -u, -s, -a, --file=<file> |                             |
+| apivoid.py        | [APIVoid](https://www.apivoid.com/)       | https://docs.apivoid.com/    | -h, -f, --file=<file> |                             |
+| censys.py         | [Censys](https://censys.io/)              | https://search.censys.io/api          | -h, -f, --file=<file> |                             |
+| hostinfo.py       | [HostInfo](https://host.io/)              | https://host.io/docs/api | -h, -f, w, d, r, -a, --file=<file> |                             |
+| ibmxforce.py      | [IBM X-Force](https://exchange.xforce.ibmcloud.com/) | https://api.xforce.ibmcloud.com/doc/ | -h, -f, --file=<file> |                             |
+| maltiverse.py     | [Maltiverse](https://www.maltiverse.com/) | https://app.swaggerhub.com/apis-docs/maltiverse/api/1.1.2 | -h, -f, --file=<file> | Only checks for the hostnames.                             |
+| sectrails.py      | [SecurityTrails](https://securitytrails.com/) | https://docs.securitytrails.com/docs | -h, -f, -d, -s, -a, --file=<file> |                             |
+| shodan.py         | [Shodan](https://www.shodan.io/)          | https://developer.shodan.io/api      | -h, -f, --file=<file> | Only checks for the hostnames and will probably need a premium API key.                            |
+| threatminer.py    | [ThreatMiner](https://www.threatminer.org/) | https://www.threatminer.org/api.php | -h, -f, -w, -d, -u, -r, -s, -t, -a,--file=<file> |                             |
+| virustotal.py     | [VirusTotal](https://www.virustotal.com/) | https://docs.virustotal.com/reference/overview | -h, -f, --file=<file> |                             |
+| spamhaus.py       | [SPAMHAUS](https://spamhaus.com/) | https://docs.spamhaus.com/ | -h, -f, -a, -g, -s, -n, -i, -o, -m, -u, --file=<file> |                             |
+| fullhunt.py       | [FullHunt](https://fullhunt.io/) | https://api-docs.fullhunt.io/ | -h, -f, -a, -d, -s, -o, --file=<file> |                             |

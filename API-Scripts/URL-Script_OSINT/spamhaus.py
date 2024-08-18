@@ -1,29 +1,20 @@
 #!/bin/python3
 
 import requests
-import os
 import sys
 import json
 import re
-import base64
+import os
 from dotenv import load_dotenv
-from urllib.parse import quote
-from datetime import datetime
 from time import sleep
 
 load_dotenv()
 
-api_key = os.environ.get("IBM_XFORCE_API_KEY")
-api_key_password = os.environ.get("IBM_XFORCE_API_PASS")
-credentials = f"{api_key}:{api_key_password}"
-encoded_credentials = base64.b64encode(credentials.encode()).decode()
+api_key = os.environ.get("SPAMHAUS_API_KEY")
 
-headers = {
-    'accept': 'application/json',
-    'Authorization': f"Basic {encoded_credentials}"
+headers = { 
+    'Authorization':'Bearer ' + api_key 
 }
-
-base_url_xf = "https://api.xforce.ibmcloud.com"
 
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
@@ -39,29 +30,27 @@ def is_valid_url(url):
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     return re.match(pattern, url) is not None
 
-def filter_data(data):
+def filter_data(data, section):
     if data is None:
         return None
 
-    section_data = {}    
-    result = data.get("result", {})
+    section_data = {}
 
-    if section == "url":    
-        section_data["Report"] = {
-            "URL" : result.get("url"),
-            'Name': result.get('application', {}).get('name'),
-            'Score': result.get('score') or result.get('application', {}).get('score'),
-            'URLs': result.get('url'),
-            'Application': result.get('application', {}),
-            'Categories': result.get('cats'),
-            'Category Descriptions': result.get('application', {}).get('categoryDescriptions'),
-            'Tags': result.get('tags', [])
+    if section == "last":
+        section_data["Last"] = {
+            "URL": data.get("url", {}),
+            "ID": data.get("id", {}),
+            "Status" : data.get("status"),
+            "Payload" : data.get("payload")
         }
-    elif section == "url/malware":    
-        section_data["Malware"] = {
-            "URL" : url,
-            "Malware": [data.get("malware", [])],
-            "Count": data.get("count", 0),
+
+    elif section == "history":
+        section_data["History"] = {
+            "URL": data.get("url", {}),
+            "ID": data.get("id", {}),
+            "Status" : data.get("status"),
+            "Payload" : data.get("payload"),
+            "Events" : data.get("events")
         }
 
     section_data.update(section_data)
@@ -73,11 +62,11 @@ def parse_args(args):
     full_data = False
     url_file = None
     sections = []
-    help = "usage: ./ibm_xforce.py <url> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f              Retrieve the API full data.\n  -r              Retrieve URL report data. (Default)\n  -m              Retrieve Malware data.\n  --file=[FILE]  Full path to a test file containing a URL on each line."
-
+    help = "usage: ./spamhaus.py <url> [-h] [-f] [-a] [-l] [-t] --file==[FILE]\n\nAn API script to gather data from https://spamhaus.org\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f              Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -l              Retrieve the last status of a URL and the last payload observed. (Default)\n  -t              Retrieve the last events occurring on a specific URL.\n  --file==[FILE]  Full path to a test file containing a URL on each line."
+    
     section_map = {
-        'r': "url",
-        'm': "url/malware"
+        'l': 'last',
+        't': "history"
     }
 
     for arg in args:
@@ -96,24 +85,28 @@ def parse_args(args):
                     sections = set(section_map.values())
                 elif flag in section_map:
                     sections.append(section_map[flag])
-        elif arg.startswith('-'):
-            print(f"Error: Unknown flag {arg}")
-            print(help)
+                else:
+                    print(f"Error: Unknown flag -{flag}")
+                    print(help)
+                    sys.exit(1)
+        elif re.search(r'^https?:', arg):
+            print(f"{arg} is not a valid URL")
             sys.exit(1)
         else:
-            print(f"Error: Unknown input {arg}")
+            print(f"Error: Unknown input {arg}\n")
             print(help)
             sys.exit(1)
     
     return url, full_data, url_file, sections
 
-def fetch_data(target):
+def fetch_data(url, section):
     try:
-        encoded_url = quote(target)
-        response = requests.get(f"{base_url_xf}/{section}/{encoded_url}", headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        return data
+        if is_valid_url(url):
+            payload = json.dumps({"url": url})
+            response = requests.post(f"https://api.spamhaus.org/api/intel/v2/byobject/url/{section}", data=payload, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            return data
 
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
@@ -121,7 +114,7 @@ def fetch_data(target):
 
 try:
     url, full_data, url_file, sections = parse_args(sys.argv[1:])
-    sections = sections or ["url"]
+    sections = sections or ["last"]
 
     if not url and not url_file:
         url = input("Enter your URL here:\n")
@@ -129,13 +122,13 @@ try:
 
     if url_file:
         with open(url_file, 'r') as file:
-            urls = [line.strip() for line in file if is_valid_url(line.strip())]
+            urls = [line.strip() for line in file if is_valid_url(line.strip()) or re.match(r'^u-[0-9a-f]{64}-[0-9]{10}$', line.strip())]
     else:
         urls = [url]
 
     for url in urls:
         for section in sections:
-            data = fetch_data(url)
+            data = fetch_data(url, section)
             if data is None:
                 break
             elif full_data:

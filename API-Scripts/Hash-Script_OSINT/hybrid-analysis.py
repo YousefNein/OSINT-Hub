@@ -58,7 +58,7 @@ def parse_args(args):
     hash = None
     full_data = False
     hash_file = None
-    help_text = "usage: ./hybrid_analysis.py <hash|id> [-h] [-f] --file=[FILE]\n\nAn API script to perform quick scan on a Hash from https://www.hybrid-analysis.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file=[FILE]   Full path to a text file containing URLs or IDs, one per line."
+    help_text = "usage: ./hybrid_analysis.py <hash> [-h] [-f] --file=[FILE]\n\nAn API script to perform quick scan on a Hash from https://www.hybrid-analysis.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f              Retrieve the API full data.\n  --file=[FILE]   Full path to a text file containing URLs or IDs, one per line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":

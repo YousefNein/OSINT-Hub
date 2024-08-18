@@ -62,7 +62,7 @@ def parse_args(args):
     hash = None
     full_data = False
     hash_file = None
-    help = "usage: ./ibm_xforce.py <hash> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  -r              Retrieve Hash report data. (Default)\n  -m              Retrieve Malware data.\n  --file=[FILE]  Full path to a test file containing a Hash on each line."
+    help = "usage: ./ibm_xforce.py <hash> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://exchange.xforce.ibmcloud.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f              Retrieve the API full data.\n  -r              Retrieve Hash report data. (Default)\n  -m              Retrieve Malware data.\n  --file=[FILE]  Full path to a test file containing a Hash on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":

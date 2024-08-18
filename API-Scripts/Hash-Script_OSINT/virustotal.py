@@ -7,7 +7,6 @@ import json
 import re
 from dotenv import load_dotenv
 from datetime import datetime
-from time import sleep
 
 load_dotenv()
 
@@ -19,6 +18,7 @@ headers = {
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
     return formatted_data
+
 def is_valid_hash(hash):
     patterns = {
         'md5': r'^[a-f0-9]{32}$',
@@ -32,34 +32,126 @@ def is_valid_hash(hash):
             return True
     return False
 
-def filter_data(data):
+def filter_data(data, hash):
     if data is None:
         return None
     
-    attributes = data.get("data", {}).get("attributes")
-    date = attributes.get("last_analysis_date")
-    date = datetime.fromtimestamp(date).strftime('%Y-%m-%d')
+    section_data = {}
 
-    filtered_data = {
-        "Hash": hash,
-        "Name" : attributes.get("meaningful_name"),
-        "Last Analysis Date" : date,
-        "Tags" : attributes.get("tags"),
-        "Size" : attributes.get("size"),
-        "Harmless" : attributes.get("last_analysis_stats", {}).get("harmless"),
-        "Malicious" : attributes.get("last_analysis_stats", {}).get("malicious"),
-        "Suspicious" : attributes.get("last_analysis_stats", {}).get("suspicious"),
-        "Timeout" : attributes.get("last_analysis_stats", {}).get("timeout"),
-        "Undetected" : attributes.get("last_analysis_stats", {}).get("undetected"),
-        "Threat Label" : attributes.get("popular_threat_classification", {}).get("suggested_threat_label")
-    }
-    return filtered_data
+    if section == "":
+        attributes = data.get("data", {}).get("attributes")
+        date = attributes.get("last_analysis_date")
+        date = datetime.fromtimestamp(date).strftime('%Y-%m-%d')
+
+        section_data["General"] = {
+            "Hash": hash,
+            "Name": attributes.get("meaningful_name"),
+            "Last Analysis Date": date,
+            "Tags": attributes.get("tags"),
+            "Size": attributes.get("size"),
+            "Harmless": attributes.get("last_analysis_stats", {}).get("harmless"),
+            "Malicious": attributes.get("last_analysis_stats", {}).get("malicious"),
+            "Suspicious": attributes.get("last_analysis_stats", {}).get("suspicious"),
+            "Timeout": attributes.get("last_analysis_stats", {}).get("timeout"),
+            "Undetected": attributes.get("last_analysis_stats", {}).get("undetected"),
+            "Threat Label": attributes.get("popular_threat_classification", {}).get("suggested_threat_label")
+        }
+
+    elif section == "/behaviour_summary":
+        section_data["Behaviour Summary"] = {
+            "Hash": hash,
+            "Command Executions": data.get("data").get("command_executions", []),
+            "Processes Injected": data.get("data").get("processes_injected", []),
+            "IP Traffic": data.get("data").get("ip_traffic", []),
+            "DNS Lookups": data.get("data").get("dns_lookups", []),
+            "TLS": data.get("data").get("tls", []),
+            "Processes": {
+                "Processes Tree": data.get("data").get("processes_tree", []),
+                "Processes Created": data.get("data").get("processes_created", []),
+                "Processes Terminated": data.get("data").get("processes_terminated", []),
+            },
+            "Files": {
+                "Files Opened": data.get("data").get("files_opened", []),
+                "Files Written": data.get("data").get("files_written", []),
+                "Files Deleted": data.get("data").get("files_deleted", []),
+                "Files Dropped": data.get("data").get("files_dropped", []),
+            },
+            "Services": {
+                "Services Opened": data.get("data").get("services_opened", []),
+                "Services Created": data.get("data").get("services_created", []),
+                "Services Stopped": data.get("data").get("services_stopped", []),
+            },
+            "Tags": data.get("data").get("tags", []),
+            "Modules Loaded": data.get("data").get("modules_loaded", []),
+            "Registry Keys Opened": data.get("data").get("registry_keys_opened", []),
+            "Text Highlighted": data.get("data").get("text_highlighted", []),
+            "MITRE Attack Techniques": data.get("data").get("mitre_attack_techniques", []),
+            "Attack Techniques": data.get("data").get("attack_techniques", [])
+        }
+
+
+    elif section == "/behaviours":
+        section_data["Behaviours"] = {
+            "Hash": hash,
+            "Sandboxes Count": data.get("meta", 0),
+            "Sandboxes": [{
+            "Snadbox Name": attributes.get("attributes").get("sandbox_name", {}),
+            "Command Executions": attributes.get("attributes").get("command_executions", []),
+            "Processes Injected": attributes.get("attributes").get("processes_injected", []),
+            "IP Traffic": attributes.get("attributes").get("ip_traffic", []),
+            "DNS Lookups": attributes.get("attributes").get("dns_lookups", []),
+            "TLS": attributes.get("attributes").get("tls", []),
+            "Processes": {
+                "Processes Tree": attributes.get("attributes").get("processes_tree", []),
+                "Processes Created": attributes.get("attributes").get("processes_created", []),
+                "Processes Terminated": attributes.get("attributes").get("processes_terminated", []),
+            },
+            "Files": {
+                "Files Opened": attributes.get("attributes").get("files_opened", []),
+                "Files Written": attributes.get("attributes").get("files_written", []),
+                "Files Deleted": attributes.get("attributes").get("files_deleted", []),
+                "Files Dropped": attributes.get("attributes").get("files_dropped", []),
+            },
+            "Services": {
+                "Services Opened": attributes.get("attributes").get("services_opened", []),
+                "Services Created": attributes.get("attributes").get("services_created", []),
+                "Services Stopped": attributes.get("attributes").get("services_stopped", []),
+            },
+            "Tags": attributes.get("attributes").get("tags", []),
+            "Modules Loaded": attributes.get("attributes").get("modules_loaded", []),
+            "Registry Keys Opened": attributes.get("attributes").get("registry_keys_opened", []),
+            "Text Highlighted": attributes.get("attributes").get("text_highlighted", []),
+            "MITRE Attack Techniques": attributes.get("attributes").get("mitre_attack_techniques", []),
+            "Attack Techniques": attributes.get("attributes").get("attack_techniques", [])
+            }
+            for attributes in data.get("data", [])]
+        }
+
+    section_data.update(section_data)
+
+    return section_data
 
 def parse_args(args):
     hash = None
     full_data = False
     hash_file = None
-    help = "usage: ./virustotal.py <hash|id> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.virustotal.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an Hash or IDs on each line."
+    sections = []
+    help = (
+        "usage: ./virustotal.py <hash> [-h] [-f] [-a] [-g] [-b] --file==[FILE]\n\n"
+        "An API script to gather data from https://www.virustotal.com/\n\n"
+        "optional arguments:\n"
+        "  -h, --help      Show this help message and exit.\n"
+        "  -f              Retrieve the API full data.\n"
+        "  -a              Retrieve all sections data.\n"
+        "  -b              Retrieve behavior summary data.\n"
+        "  --file==[FILE]  Full path to a test file containing a hash or IDs on each line."
+    )
+
+    section_map = {
+        'g': "",
+        's': "/behaviour_summary",
+        'b': "/behaviours",
+    }
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -67,24 +159,27 @@ def parse_args(args):
             sys.exit(0)
         elif is_valid_hash(arg):
             hash = arg
-        elif arg == '-f':
-            full_data = True
         elif arg.startswith("--file="):
             hash_file = arg.split("=", 1)[1]
         elif arg.startswith('-'):
-            print(f"Error: Unknown flag {arg}")
-            print(help)
-            sys.exit(1)
-        else:
-            print(f"Error: Unknown input {arg}")
-            print(help)
-            sys.exit(1)
+            for flag in arg[1:]:
+                if flag == 'f':
+                    full_data = True
+                elif flag == 'a':
+                    sections = set(section_map.values())
+                elif flag in section_map:
+                    sections.append(section_map[flag])
+                else:
+                    print(f"Error: Unknown flag -{flag}")
+                    print(help)
+                    sys.exit(1)
     
-    return hash, full_data, hash_file
+    return hash, full_data, hash_file, sections
 
-def fetch_data(hash):
+def fetch_data(hash, section):
     try:
-        response = requests.get(f"https://www.virustotal.com/api/v3/files/{hash}", headers=headers)
+        url = f"https://www.virustotal.com/api/v3/files/{hash}{section}"
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
         return data
@@ -94,7 +189,8 @@ def fetch_data(hash):
         print(response.json())
 
 try:
-    hash, full_data, hash_file = parse_args(sys.argv[1:])
+    hash, full_data, hash_file, sections = parse_args(sys.argv[1:])
+    sections = sections or [""]
 
     if not hash and not hash_file:
         hash = input("Enter your Hash here:\n")
@@ -107,14 +203,15 @@ try:
         hashes = [hash]
 
     for hash in hashes:
-        data = fetch_data(hash)
-        if data is None:
-            break
-        elif full_data:
-            print(format_data(data))
-        else:
-            filtered_response = filter_data(data)
-            print(format_data(filtered_response))
+        for section in sections:
+            data = fetch_data(hash, section)
+            if data is None:
+                break
+            elif full_data:
+                print(format_data(data))
+            else:
+                filtered_response = filter_data(data, hash)
+                print(format_data(filtered_response))
 
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")

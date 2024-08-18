@@ -73,7 +73,7 @@ def parse_args(args):
     ip = None
     full_data = False
     ip_file = None
-    help = "usage: ./greynoise.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.greynoise.io/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f,             Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
+    help = "usage: ./greynoise.py <ip> [-h] [-f] --file==[FILE]\n\nAn API script to gather data from https://www.greynoise.io/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f              Retrieve the API full data.\n  --file==[FILE]  Full path to a test file containing an IP address on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -96,6 +96,20 @@ def parse_args(args):
     
     return ip, full_data, ip_file
 
+def fetch_data(ip):
+    try:
+        url = f"https://api.greynoise.io/v3/community/{ip}"  # Free version
+        # url = f"https://api.greynoise.io/v2/noise/context/{ip}" # Enterprise API
+
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        return data
+    
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        print(response.json())
+
 try:
     ip, full_data, ip_file = parse_args(sys.argv[1:])
 
@@ -110,27 +124,16 @@ try:
         ips = [ip]
 
     for ip in ips:
-        if not is_valid_ipv4(ip):
-            print(f"{ip} is not a valid IPv4 address")
-            continue
-   
-        url = f"https://api.greynoise.io/v3/community/{ip}" #Free version
-        # url = f"https://api.greynoise.io/v2/noise/context/{ip}" # Enterprise API
-
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        parsed = json.loads(response.text)
-
-        if full_data:
-            print(format_data(parsed))
+        data = fetch_data(ip)
+        if data is None:
+             break
+        elif full_data:
+             print(format_data(data))
         else:
-            filtered_response = filter_data(parsed)
-            print(format_data(filtered_response))
+             filtered_response = filter_data(data)
+             print(format_data(filtered_response))
     
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
-except requests.exceptions.RequestException as e:
-    print(f"An error occurred: {e}")
-    print(response.json())
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
