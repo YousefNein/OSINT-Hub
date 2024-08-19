@@ -109,10 +109,10 @@ An API script to gather data from https://www.virustotal.com/
 optional arguments:
   -h, --help          Show this help message and exit.
   -f                  Retrieve the API full data.
-  --file=[FILE]       Full path to a file containing URLs or IDs on each line.
-  -g                  Retrieve general data (default if no section is specified).
   -a                  Retrieve all sections of data.
-  -b                  Retrieve behavioral data for the URL (requires URL ID)."""
+  -g                  Retrieve general data (Default).
+  -b                  Retrieve behavioral data for the URL.
+  --file=[FILE]       Full path to a file containing URLs or IDs on each line."""
 
     analysis_id = None
     section_map = {

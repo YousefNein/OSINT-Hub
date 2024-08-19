@@ -33,3 +33,5 @@ Free Automated Malware Analysis Service | powered by Falcon Sandbox - https://ww
 Interactive Online Malware Analysis Sandbox | ANY.RUN - https://app.any.run/
 
 Lookup | Reputation Checker | Spamhaus - https://check.spamhaus.org/
+
+Search engine and data archive | Intelligence X - https://intelx.io/

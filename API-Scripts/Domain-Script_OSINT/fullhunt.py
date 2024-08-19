@@ -97,8 +97,18 @@ def parse_args(args):
     full_data = False
     domain_file = None
     sections = []
-    help = "usage: ./fullhunt.py <domain> [-h] [-f] [-a] [-d] [-s] [-o] --file==[FILE]\n\nAn API script to gather data from https://otx.alienvault.com/\n\noptional arguments:\n  -h, --help     Show this help message and exit.\n  -f              Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -d              Retrieve details about a domain (Default).\n  -s              Retrieve subdomains data.\n  -o              Retrieve hostnames data.\n  --file==[FILE]  Full path to a test file containing a domain name on each line."
-    
+    help = (
+        "usage: ./fullhunt.py <domain|hostname> [-h] [-f] [-a] [-d] [-s] [-o] --file==[FILE]\n\n"
+        "An API script to gather data from https://fullhunt.io/\n\n"
+        "optional arguments:\n"
+        "  -h, --help      Show this help message and exit.\n"
+        "  -f              Retrieve the API full data.\n"
+        "  -a              Retrieve all sections data.\n"
+        "  -d              Retrieve details data (Default).\n"
+        "  -s              Retrieve subdomains data.\n"
+        "  -o              Retrieve hostname data.\n"
+        "  --file==[FILE]  Full path to a test file containing a domain on each line."
+    )
     section_map = {
         'd': "details",
         's': "subdomains",

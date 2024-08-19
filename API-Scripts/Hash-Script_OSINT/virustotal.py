@@ -137,13 +137,15 @@ def parse_args(args):
     hash_file = None
     sections = []
     help = (
-        "usage: ./virustotal.py <hash> [-h] [-f] [-a] [-g] [-b] --file==[FILE]\n\n"
+        "usage: ./virustotal.py <hash> [-h] [-f] [-a] [-g] [-s] [-b] --file==[FILE]\n\n"
         "An API script to gather data from https://www.virustotal.com/\n\n"
         "optional arguments:\n"
         "  -h, --help      Show this help message and exit.\n"
         "  -f              Retrieve the API full data.\n"
         "  -a              Retrieve all sections data.\n"
-        "  -b              Retrieve behavior summary data.\n"
+        "  -g              Retrieve general data (Default).\n"
+        "  -s              Retrieve behavior summary data.\n"
+        "  -b              Retrieve all behavior data.\n"
         "  --file==[FILE]  Full path to a test file containing a hash or IDs on each line."
     )
 

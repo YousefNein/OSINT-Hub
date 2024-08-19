@@ -6,8 +6,6 @@ import sys
 import json
 import re
 from dotenv import load_dotenv
-from time import sleep
-from urllib.parse import quote
 
 load_dotenv()
 
@@ -20,6 +18,7 @@ headers = {
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
     return formatted_data
+
 def is_valid_hash(hash):
     patterns = {
         'md5': r'^[a-f0-9]{32}$',
@@ -33,26 +32,51 @@ def is_valid_hash(hash):
             return True
     return False
 
-# def filter_data(data): Under construction
-#     if data is None:
-#         return None
+def filter_data(data):
+    if data is None:
+        return None
 
-#     analysis = data.get("analysis")
+    for entry in data:    
+        filtered_data = {
+            "Hash": hash,
+            "Malware Info": {
+                "Family": entry.get("vx_family"),
+                "Threat Level": entry.get("threat_level"),
+                "Verdict": entry.get("verdict"),
+                "Threat Score": entry.get("threat_score"),
+            },
+            "Environment Info": {
+                "Description": entry.get("environment_description"),
+                "Size": entry.get("size"),
+                "Type": entry.get("type"),
+                "Submission Name": entry.get("submit_name"),
+                "Start Time": entry.get("analysis_start_time"),
+            },
+            "AV Detection": {
+                "AV Detect": entry.get("av_detect"),
+            },
+            "CrowdStrike AI": {
+                "Executable Process Memory Analysis": entry.get("crowdstrike_ai", {}).get("executable_process_memory_analysis"),
+                "Analysis Related URLs": entry.get("crowdstrike_ai", {}).get("analysis_related_urls"),
+            },
+            "Submissions": entry.get("submissions"),
+            "Classification Tags": entry.get("classification_tags"),
+            "Tags": entry.get("tags"),
+            "URL Analysis": entry.get("url_analysis"),
+            "DLL Characteristics": entry.get("dll_characteristics"),
+            "OS Version": {
+                "Major": entry.get("major_os_version"),
+                "Minor": entry.get("minor_os_version"),
+            },
+            "Processes": entry.get("processes"),
+            "Domains": entry.get("domains"),
+            "Hosts": entry.get("hosts"),
+            "Compromised Hosts": entry.get("compromised_hosts"),
+            "Total Processes": entry.get("total_processes"),
+            "Signatures": entry.get("signatures")
+        }
 
-#     filtered_data = {
-#         "Hash" : analysis.get("hash"),
-#         "Info" : {
-#             "File Class" : analysis.get("info",{}).get("file_class"),
-#             "File Type" : analysis.get("info",{}).get("file_type"),
-#             "File Size" : analysis.get("info",{}).get("file_size"),
-#         },
-#         "Plugins": {
-
-#         },
-#     }
-
-#     return filtered_data
-
+    return filtered_data
 
 def parse_args(args):
     hash = None
@@ -108,8 +132,7 @@ try:
         elif full_data:
             print(format_data(data))
         else:
-            # filtered_response = filter_data(data)
-            filtered_response = data
+            filtered_response = filter_data(data)
             print(format_data(filtered_response))
 
 except KeyboardInterrupt:
