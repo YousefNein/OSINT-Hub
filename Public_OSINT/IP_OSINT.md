@@ -85,3 +85,7 @@ Cyberspace Search Engine | ZoomEye - https://www.zoomeye.hk/
 Analyzing and classifying internet wide data | BinaryEdge - https://app.binaryedge.io/services/query
 
 Search engine and data archive | Intelligence X - https://intelx.io/
+
+Cybersecurity Search Engine | Criminal IP - https://www.criminalip.io/
+
+Advanced threat prevention and detection| MetaDefender Cloud - https://metadefender.opswat.com

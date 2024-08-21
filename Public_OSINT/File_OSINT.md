@@ -68,3 +68,7 @@ Simple File Analysis | Malcore - https://malcore.io/
 Lookup | Reputation Checker | Spamhaus - https://check.spamhaus.org/
 
 IOC Radar | SOCRadar LABS - https://socradar.io/labs/ioc-radar/
+
+Community driven public malware repository | MALSHARE - https://malshare.com/
+
+Advanced threat prevention and detection| MetaDefender Cloud - https://metadefender.opswat.com

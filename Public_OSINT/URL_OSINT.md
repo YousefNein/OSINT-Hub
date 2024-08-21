@@ -35,3 +35,7 @@ Interactive Online Malware Analysis Sandbox | ANY.RUN - https://app.any.run/
 Lookup | Reputation Checker | Spamhaus - https://check.spamhaus.org/
 
 Search engine and data archive | Intelligence X - https://intelx.io/
+
+Cybersecurity Search Engine | Criminal IP - https://www.criminalip.io/
+
+Advanced threat prevention and detection| MetaDefender Cloud - https://metadefender.opswat.com
