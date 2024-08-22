@@ -30,7 +30,7 @@ def filter_data(data, section, hash):
     section_data = {}
 
     if section == "1":
-        section_data["Whois"] = [
+        section_data["Meta Data"] = [
             {
             "hash": hash,
             "Hostname": entry.get("reverse_name"),
@@ -42,7 +42,7 @@ def filter_data(data, section, hash):
         for entry in data["results"]
         ]
     elif section == "2":
-        section_data["DNS"] = [
+        section_data["HTTP Traffic"] = [
             {
                 "hash": hash,
                 "Domain": entry.get("domain"),
@@ -52,7 +52,7 @@ def filter_data(data, section, hash):
             for entry in data["results"]
         ]
     elif section == "3":
-        section_data["URI"] = [
+        section_data["Hosts"] = [
             {
                 "hash": hash,
                 "Domain": entry.get("domain"),
@@ -62,11 +62,22 @@ def filter_data(data, section, hash):
             for entry in data["results"]
         ]
     elif section == "4":
-        section_data["Hashes"] = { "hash": hash, "Hashes": data["results"]}
+        section_data["Mutants"] = { "hash": hash, "Hashes": data["results"]}
     elif section == "5":
-        section_data["SSL Certificate"] = { "hash": hash, "Certificate": data["results"]}
+        section_data["Registry keys"] = { "hash": hash, "Certificate": data["results"]}
     elif section == "6":
-        section_data["Reports"] = [
+        section_data["AV Detections"] = [
+            {
+                "hash": hash,
+                "Filename": entry.get("filename"),
+                "Year": entry.get("year"),
+                "URL": entry.get("URL")
+            }
+            for entry in data["results"]
+        ]
+
+    elif section == "7":
+        section_data["Report Tagging"] = [
             {
                 "hash": hash,
                 "Filename": entry.get("filename"),

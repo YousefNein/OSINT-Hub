@@ -222,7 +222,7 @@ def filter_data(data):
 
     elif section == 'ip/malicious-info':
         section_data["Malicious Info"] = {
-            "IP": data.get("ip"),
+            "IP": ip,
             "Is Malicious": data.get("is_malicious", False),
             "Is VPN": data.get("is_vpn", False),
             "Is Anonymous VPN": data.get("is_anonymous_vpn", False),

@@ -89,3 +89,5 @@ Search engine and data archive | Intelligence X - https://intelx.io/
 Cybersecurity Search Engine | Criminal IP - https://www.criminalip.io/
 
 Advanced threat prevention and detection| MetaDefender Cloud - https://metadefender.opswat.com
+
+Sharing botnet C&C servers | Feodo Tracker - https://feodotracker.abuse.ch/
