@@ -71,4 +71,4 @@ IOC Radar | SOCRadar LABS - https://socradar.io/labs/ioc-radar/
 
 Community driven public malware repository | MALSHARE - https://malshare.com/
 
-Advanced threat prevention and detection| MetaDefender Cloud - https://metadefender.opswat.com
+Advanced threat prevention and detection | MetaDefender Cloud - https://metadefender.opswat.com
