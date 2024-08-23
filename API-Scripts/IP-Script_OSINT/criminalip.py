@@ -220,7 +220,7 @@ def filter_data(data):
                 ],
         }}
 
-    elif section == 'ip/malicious-info':
+    elif section == 'feature/ip/malicious-info':
         section_data["Malicious Info"] = {
             "IP": ip,
             "Is Malicious": data.get("is_malicious", False),
@@ -301,7 +301,7 @@ def filter_data(data):
                 ]
         }
 
-    elif section == 'ip/hosting':
+    elif section == 'v1/ip/hosting':
         section_data["Hosting"] = {
         "IP": data.get("ip"),
         "Is Hosting": data.get("is_hosting", False),
@@ -353,7 +353,7 @@ def parse_args(args):
         's': "asset/ip/report/summary",
         'i': "asset/ip/summary",
         'v': "ip/vpn",
-        'm': "ip/malicious-info",
+        'm': "feature/ip/malicious-info",
         't': "ip/hosting"
     }
 
