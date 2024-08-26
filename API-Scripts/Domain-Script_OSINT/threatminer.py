@@ -132,11 +132,11 @@ try:
 
     if ip_file:
         with open(ip_file, 'r') as file:
-            ips = [line.strip() for line in file if is_valid_domain(line.strip())]
+            domains = [line.strip() for line in file if is_valid_domain(line.strip())]
     else:
-        ips = [domain]
+        domains = [domain]
     
-    for domain in ips:
+    for domain in domains:
         time.sleep(6)
         if not is_valid_domain(domain):
             print(f"{domain} is not a valid domain")
