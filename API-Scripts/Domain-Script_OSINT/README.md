@@ -62,3 +62,4 @@ python3 virustotal.py example.com -f
 | virustotal.py     | [VirusTotal](https://www.virustotal.com/) | https://docs.virustotal.com/reference/overview | -h, -f, --file=<file> |                             |
 | spamhaus.py       | [SPAMHAUS](https://spamhaus.com/) | https://docs.spamhaus.com/ | -h, -f, -a, -g, -s, -n, -i, -o, -m, -u, --file=<file> |                             |
 | fullhunt.py       | [FullHunt](https://fullhunt.io/) | https://api-docs.fullhunt.io/ | -h, -f, -a, -d, -s, -o, --file=<file> |                             |
+| criminalip.py       | [Criminal IP](https://criminalip.io/) | https://www.criminalip.io/developer/api/get-domain-reports | -h, -f, --file=<file> |                             |
