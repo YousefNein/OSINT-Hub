@@ -87,8 +87,8 @@ optional arguments:
 
 def fetch_data(ip):
     try:
-        response = requests.get(f'https://api.securefeed.net/host/check/{ip}?apiKey{apikey}')
-        response.raise_for_status()
+        response = requests.get(f'https://api.securefeed.com/host/check/{ip}?apiKey{apikey}', verify=False)
+        # response.raise_for_status()
         data = response.json()
         return data
 
