@@ -9,7 +9,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-apikey = os.environ.get('SECUREFEED_API_KEY')
+api_key = os.environ.get('PULSEDIVE_API_KEY')
+
+headers = {
+    'Accept': 'application/json'
+}
 
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
@@ -26,26 +30,18 @@ def filter_data(data):
         return None
     
     filtered_data = {
-    "IP": data.get("IP"),
-    "Classification": data.get("Classification"),
-    "Reports": [
+        "IP": ip,
+        "Results": [
         {
-            "Description": report.get("Description"),
-            "First Seen": report.get("First_seen"),
-            "Last Seen": report.get("Last_seen"),
-            "Source": report.get("Source")
-        }
-        for report in data.get("Reports", [])
-    ],
-    "ISP": {
-        "Name": data.get("ISP", {}).get("IspName"),
-        "Network": data.get("ISP", {}).get("IspNetwork")
-    },
-    "Country": data.get("Location", {}).get("CountryCode"),
-
-    "Malicious Tags": data.get("MaliciousTags", []),
-    "Tags": data.get("Tags", [])
-}
+        "Indicator ID": result.get("iid", 0),
+        "Type": result.get("type"),
+        "Indicator": result.get("indicator"),
+        "Risk": result.get("risk"),
+        "Added Time": result.get("stamp_added"),
+        "Summary": result.get("summary") if isinstance(result.get("summary"), dict) else result.get("summary")[0] if result.get("summary") else None
+        } for result in data.get("results", [])
+        ]
+    }
 
     return filtered_data
 
@@ -54,9 +50,9 @@ def parse_args(args):
     full_data = False
     ip_file = None
     help = """
-usage: ./secfeed.py <ip> [-h] [-f] --file==[FILE]
+usage: ./pulsedive.py <ip> [-h] [-f] --file==[FILE]
 
-An API script to gather data from https://securefeed.com/
+An API script to gather data from https://pulsedive.com/
 
 optional arguments:
   -h, --help      Show this help message and exit.
@@ -87,8 +83,8 @@ optional arguments:
 
 def fetch_data(ip):
     try:
-        response = requests.get(f'https://api.securefeed.com/host/check/{ip}?apiKey{apikey}')
-        # response.raise_for_status()
+        response = requests.get(f'https://pulsedive.com/api/explore.php?q=ioc%3D{ip}%20or%20threat%3D*&limit=10&pretty=1&key={api_key}', headers=headers)
+        response.raise_for_status()
         data = response.json()
         return data
 
