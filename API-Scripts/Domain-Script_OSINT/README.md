@@ -64,4 +64,4 @@ python3 virustotal.py example.com -f
 | fullhunt.py       | [FullHunt](https://fullhunt.io/) | https://api-docs.fullhunt.io/ | -h, -f, -a, -d, -s, -o, --file=<file> |                             |
 | criminalip.py       | [Criminal IP](https://criminalip.io/) | https://www.criminalip.io/developer/api/get-domain-reports | -h, -f, --file=<file> |                             |
 | opswat.py       | [MetaDefender Cloud](https://metadefender.opswat.com) | https://docs.opswat.com/mdcloud/metadefender-cloud-api-v4 | -h, -f, --file=<file> |                                            Will update in the future to have bulk upload  
-| pulsedive.py       | [SecureFeed](https://pulsedive.com/) | https://pulsedive.com/api/ | -h, -f, --file=<file> |                                                                                             |
+| pulsedive.py       | [Pulsedive](https://pulsedive.com/) | https://pulsedive.com/api/ | -h, -f, --file=<file> |                                                                                             |
