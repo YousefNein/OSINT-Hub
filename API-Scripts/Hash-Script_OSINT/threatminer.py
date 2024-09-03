@@ -23,7 +23,7 @@ def is_valid_hash(hash):
             return True
     return False
 
-def filter_data(data, section, hash):
+def filter_data(data):
     if data is None or 'results' not in data:
         return None
     
@@ -32,54 +32,64 @@ def filter_data(data, section, hash):
     if section == "1":
         section_data["Meta Data"] = [
             {
-            "hash": hash,
-            "Hostname": entry.get("reverse_name"),
-            "Network": entry.get("bgp_prefix"),
-            "Country": entry.get("cc"),
-            "Org": entry.get("org_name"),
-            "Register": entry.get("register")
+            "Hash": hash,
+            "MD5": entry.get("md5"),
+            "SHA256": entry.get("sha256"),
+            "SSDeep": entry.get("ssdeep"),
+            "IMPHash": entry.get("imphash"),
+            "File Name": entry.get("file_name"),
+            "File Type": entry.get("file_type"),
+            "Architecture": entry.get("architecture"),
+            "Analyzed Date": entry.get("date_analysed")
             }
-        for entry in data["results"]
+        for entry in data.get("results")
         ]
     elif section == "2":
         section_data["HTTP Traffic"] = [
             {
-                "hash": hash,
-                "Domain": entry.get("domain"),
-                "First Seen": entry.get("first_seen"),
-                "Last Seen": entry.get("last_seen")
+                "Domain": http_entry.get("domain"),
+                "IP": http_entry.get("ip"),
+                "HTTP Method": http_entry.get("method"),
+                "URL": http_entry.get("url"),
+                "User Agent": http_entry.get("user_agent"),
+                "Port": http_entry.get("port")
             }
-            for entry in data["results"]
+            for entry in data.get("results", []) for http_entry in entry.get("http_traffic", [])
         ]
     elif section == "3":
-        section_data["Hosts"] = [
-            {
-                "hash": hash,
-                "Domain": entry.get("domain"),
-                "URI": entry.get("uri"),
-                "Last Seen": entry.get("last_seen")
-            }
-            for entry in data["results"]
-        ]
+        section_data["Hosts"] = {
+            "Domains": [
+                {
+                    "IP": domain_entry.get("ip"),
+                    "Domain": domain_entry.get("domain")
+                }
+                for entry in data.get("results", []) for domain_entry in entry.get("domains", [])
+            ],
+            "Hosts": [
+                host_entry
+                for entry in data.get("results", []) for host_entry in entry.get("hosts", [])
+            ]
+        }
+
     elif section == "4":
-        section_data["Mutants"] = { "hash": hash, "Hashes": data["results"]}
+        section_data["Mutants"] = [mutants_entry
+            for entry in data.get("results", []) for mutants_entry in entry.get("mutants", [])
+            ]
     elif section == "5":
-        section_data["Registry keys"] = { "hash": hash, "Certificate": data["results"]}
+        section_data["Registry keys"] = { "Hash": hash, "Regitery": data["results"]}
     elif section == "6":
         section_data["AV Detections"] = [
             {
-                "hash": hash,
-                "Filename": entry.get("filename"),
-                "Year": entry.get("year"),
-                "URL": entry.get("URL")
+                "Detection": av_entry.get("detection"),
+                "Anti-Virus": av_entry.get("av")
             }
-            for entry in data["results"]
+            for entry in data.get("results", []) for av_entry in entry.get("av_detections", [])
         ]
 
     elif section == "7":
         section_data["Report Tagging"] = [
             {
-                "hash": hash,
+                "Hash": hash,
                 "Filename": entry.get("filename"),
                 "Year": entry.get("year"),
                 "URL": entry.get("URL")
@@ -138,6 +148,18 @@ def parse_args(args):
     
     return hash, full_data, hash_file, sections
 
+def fetch_data(hash, section):
+    try:
+        url = f"https://api.threatminer.org/v2/sample.php?q={hash}&rt={section}"
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        return data
+
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        print(response.json())
+
 try:
     hash, full_data, hash_file, sections = parse_args(sys.argv[1:])
     sections = sections or ["1"]
@@ -148,33 +170,23 @@ try:
 
     if hash_file:
         with open(hash_file, 'r') as file:
-            hashs = [line.strip() for line in file if is_valid_hash(line.strip())]
+            hashes = [line.strip() for line in file if is_valid_hash(line.strip())]
     else:
-        hashs = [hash]
-    
-    for hash in hashs:
+        hashes = [hash]
+
+    for hash in hashes:
         time.sleep(6)
-        if not is_valid_hash(hash):
-            print(f"{hash} is not a valid IPv4 address")
-            continue
-
         for section in sections:
-            url = f"https://api.threatminer.org/v2/sample.php?q={hash}&rt={section}"
-
-            response = requests.get(url=url)
-            response.raise_for_status()
-            parsed = json.loads(response.text)
-
-            if full_data:
-                print(format_data(parsed))
+            data = fetch_data(hash, section)
+            if data is None:
+                break
+            elif full_data:
+                print(format_data(data))
             else:
-                filtered_response = filter_data(parsed, section, hash)
+                filtered_response = filter_data(data)
                 print(format_data(filtered_response))
 
 except KeyboardInterrupt:
     print("\nProcess interrupted by user.")
-except requests.exceptions.RequestException as e:
-    print(f"An error occurred: {e}")
-    print(response.json())
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
