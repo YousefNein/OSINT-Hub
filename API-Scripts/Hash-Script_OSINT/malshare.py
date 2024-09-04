@@ -4,10 +4,12 @@ import requests
 import json
 import re
 import sys
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
+api_key = os.environ.get("MALSHARE_API_KEY")
 
 def format_data(data):
     formatted_data = json.dumps(data, indent=4, sort_keys=False)
@@ -29,21 +31,13 @@ def filter_data(data):
     if data is None:
         return None
     
-    data = data["data"][0]
-    
     filtered_data = {
         "Hash": hash,
-        "File Name" : data.get("file_name"),
-        "File Type" : data.get("file_type"),
-        "File Size" : data.get("file_size"),
-        "Signature" : data.get("signature"),
-        "Origin Country" : data.get("origin_country"),
-        "Tags" : data.get("tags"),
-        "First Seen" : data.get("firstseen"),
-        "Last Seen" : data.get("lastseen"),
-        "Intelligence" : data.get("intelligence"),
-        "OLE Information" : data.get("ole_information"),
-        "Vendor Intel" : data.get("vendor_intel")
+        "MD5" : data.get("MD5"),
+        "SHA256" : data.get("SHA256"),
+        "ssdeep" : data.get("SSDEEP"),
+        "File Type" : data.get("F_TYPE"),
+        "File Name" : data.get("FILENAMES")
     }
 
     return filtered_data
@@ -52,7 +46,7 @@ def parse_args(args):
     hash = None
     full_data = False
     hash_file = None
-    help = "usage: ./malbazz.py <hash> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://bazaar.abuse.ch/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f              Retrieve the API full data.\n  --file=[FILE]   Full path to a test file containing an Hash on each line."
+    help = "usage: ./msldhstr.py <hash> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://malshare.com/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f              Retrieve the API full data.\n  --file=[FILE]   Full path to a test file containing an Hash on each line."
 
     for arg in args:
         if arg == "--help" or arg == "-h":
@@ -77,11 +71,7 @@ def parse_args(args):
 
 def fetch_data(hash):
     try:
-        payload = {
-        "query": "get_info",
-        "hash": hash
-    }
-        response = requests.post(url="https://mb-api.abuse.ch/api/v1/", data=payload)
+        response = requests.get(f"https://malshare.com/api.php?api_key={api_key}&action=details&hash={hash}")
         data = response.json()
         return data
 
