@@ -50,14 +50,22 @@ def filter_data(data):
             "Error": data.get("error"),
             "Image Objects": data.get("image_objects") if isinstance(data.get("image_objects"), list) else [],
             "Categories": data.get("categories") if isinstance(data.get("categories"), list) else [],
-            "screenshot_path": data.get("screenshot_path")
-
+            "Screenshot": data.get("screenshot_path")
         }
 
     elif section == "full":
         section_data["Full Scan"] = {
-            "URL": url,
-
+            "URL": data.get("url"),
+            "Job ID": data.get("job_id"),
+            "URL SHA256": data.get("url_sha256"),
+            "Disposition": data.get("disposition"),
+            "Brand": data.get("brand"),
+            "Insights": data.get("insights"),
+            "Resolved": data.get("resolved"),
+            "Error": data.get("error"),
+            "Image Objects": data.get("image_objects") if isinstance(data.get("image_objects"), list) else [],
+            "Categories": data.get("categories") if isinstance(data.get("categories"), list) else [],
+            "Screenshot": data.get("screenshot_path")
         }
 
     section_data.update(section_data)
@@ -68,7 +76,7 @@ def parse_args(args):
     url = None
     full_data = False
     url_file = None
-    help = "usage: ./checkphish.py <url|jobid> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://app.checkphish.ai/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f              Retrieve the API full data.\n  --file=[FILE]   Full path to a test file containing an URL on each line."
+    help = "usage: ./checkphish.py <url|jobid> [-h] [-f] --file=[FILE]\n\nAn API script to gather data from https://app.checkphish.ai/\n\noptional arguments:\n  -h, --help      Show this help message and exit.\n  -f              Retrieve the API full data.\n  -a              Retrieve all sections data.\n  -q              Retrieve quick scan data. (Default)\n  -u              Retrieve full scan data.\n  --file=[FILE]   Full path to a test file containing an URL on each line."
     jobid = None
     sections = []
     section_map = {
@@ -114,7 +122,7 @@ class APIError(Exception):
 def fetch_data(target, section):
     try:
         if is_valid_url(target):
-            payload = {"apikey": api_key, "urlInfo": {"url": target}, "scanType": section}
+            payload = {"apiKey": api_key, "urlInfo": {"url": target}, "scanType": section}
             response = requests.post(f"{base_url}/neo/scan", headers=headers, json=payload)
             response.raise_for_status()
             response = response.json()
