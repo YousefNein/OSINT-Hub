@@ -76,7 +76,7 @@ def filter_data(data):
             "Signatures": entry.get("signatures")
         }
 
-    return filtered_data
+        return filtered_data
 
 def parse_args(args):
     hash = None
