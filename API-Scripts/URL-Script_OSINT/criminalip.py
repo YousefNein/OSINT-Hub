@@ -34,8 +34,22 @@ def filter_data(data):
     if data is None:
         return None
     
+    data = data.get("data", {})
+    filtered_data = {
+        "URL": url,
+        "Certificates Data": [
+            {
+                "Life": cert.get("certificate_life"),
+                "Issuer": cert.get("issuer"),
+                "Issue Data": cert.get("valid_from")
+            } for cert in data.get("certificates", [])
+        ],
+        "Connected Subdomains": [
+        subdomain["domain"]
+        for connsub in data.get("connected_domain_subdomain", [])
+        for subdomain in connsub.get("subdomains", [])]
+    }
 
-    filtered_data = data
     return filtered_data
 
 def parse_args(args):
@@ -80,7 +94,7 @@ def fetch_data(target):
         else:
             id = target
         while True:
-            response = requests.get(f"{base_url}/v2/domain/report/{id}", headers=headers)
+            response = requests.get(f"{base_url}/v2/domain/report/{id}", headers=headers, allow_redirects=True)
             data = response.json()
             print(data)
             if response.status_code == 400:
