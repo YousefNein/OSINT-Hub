@@ -37,6 +37,9 @@ def filter_data(data):
     data = data.get("data", {})
     filtered_data = {
         "URL": url,
+        "Domain Info": data.get("main_domain_info", {}),
+        "Subdomains": [sub.get("subdomain_name") for sub in data.get("subdomains", [])],
+        "Main Certificate": data.get("main_certificate", {}),
         "Certificates Data": [
             {
                 "Life": cert.get("certificate_life"),
@@ -47,7 +50,17 @@ def filter_data(data):
         "Connected Subdomains": [
         subdomain["domain"]
         for connsub in data.get("connected_domain_subdomain", [])
-        for subdomain in connsub.get("subdomains", [])]
+        for subdomain in connsub.get("subdomains", [])],
+        "Connected IPs": [
+            data.get("connected_ip", [])
+        ],
+        "Detected Program": data.get("detected_program", {}),
+        "DNS Records": data.get("dns_record", {}),
+        "File Exposure": data.get("file_exposure", {}),
+        "Javascript Variables": data.get("javascript_variables", {}),
+        "Links": data.get("links", {}),
+        "Technologies": data.get("technologies", []),
+        "Summary": data.get("summary", {})
     }
 
     return filtered_data
