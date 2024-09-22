@@ -5,6 +5,7 @@ import os
 import argparse
 import sys
 import json
+import mimetypes
 from dotenv import load_dotenv
 from time import sleep
 
@@ -17,36 +18,44 @@ headers = {
     'x-apikey': os.environ.get("VIRUS_TOTAL_API")
 }
 
-file_location = False
-
-def fetch_data(target):
+def fetch_data(file_location):
     try:
-        if target is True:
-            files = { "file": (file_location, open(file_location, "rb"), "text/csv") }
-            response = requests.post(f"{url}/files", headers=headers, file=files)
-            response.raise_for_status()
-            response = response.json()
-            analysis_id = response.get("data", {}).get("id")
-            print(f"Analysing the URL with this {analysis_id}...\n")
-        else:
-            analysis_id = target
+        print(file_location)
+        mime_type, _ = mimetypes.guess_type(file_location)
+        if not mime_type:
+            mime_type = "application/octet-stream"
+        print(mime_type)
+        files = { "file": (file_location, open(file_location, "rb"), mime_type) }
+        print(files)
+        response = requests.post(f"{url}/files", headers=headers, files=files)
+        response.raise_for_status()
+        response = response.json()
+        analysis_id = response.get("data", {}).get("id")
+        print(f"Analysing the URL with ID {analysis_id}...\n")
+        response = requests.get(f"{url}/analyses/{analysis_id}", headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        while True:
             response = requests.get(f"{url}/analyses/{analysis_id}", headers=headers)
             response.raise_for_status()
             data = response.json()
-            print(data)
-            return data
-        while True:
-                response = requests.get(f"{url}/analyses/{analysis_id}", headers=headers)
-                response.raise_for_status()
-                data = response.json()
-                if data.get("data", {}).get("attributes", {}).get("status") != "queued":
-                    return data
-                sleep(5)
+            if data.get("data", {}).get("attributes", {}).get("status") != "queued":
+                return data
+            sleep(5)
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
         print(response.json())
 
 def main():
-    fetch_data()
+    parser = argparse.ArgumentParser(description="Upload a file to VirusTotal.")
+    parser.add_argument("-f", "--file", help="Path to the file to be uploaded.")
+    
+    args = parser.parse_args()
+    if args.file:
+        fetch_data(args.file)
+    else:
+        print("Please provide either a file path to upload or an analysis ID to fetch results.")
+        sys.exit(1)
 
-main()
+if __name__ == "__main__":
+    main()
