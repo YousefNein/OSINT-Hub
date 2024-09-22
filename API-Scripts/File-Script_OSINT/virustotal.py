@@ -14,19 +14,15 @@ url = "https://www.virustotal.com/api/v3/"
 
 headers = {
     "accept": "application/json",
-    "content-type": "multipart/form-data",
     'x-apikey': os.environ.get("VIRUS_TOTAL_API")
 }
 
 def fetch_data(file_location):
     try:
-        print(file_location)
         mime_type, _ = mimetypes.guess_type(file_location)
         if not mime_type:
             mime_type = "application/octet-stream"
-        print(mime_type)
         files = { "file": (file_location, open(file_location, "rb"), mime_type) }
-        print(files)
         response = requests.post(f"{url}/files", headers=headers, files=files)
         response.raise_for_status()
         response = response.json()
@@ -52,7 +48,8 @@ def main():
     
     args = parser.parse_args()
     if args.file:
-        fetch_data(args.file)
+        data = fetch_data(args.file)
+        print(data)
     else:
         print("Please provide either a file path to upload or an analysis ID to fetch results.")
         sys.exit(1)
