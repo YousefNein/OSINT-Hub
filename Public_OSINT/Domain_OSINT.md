@@ -91,3 +91,9 @@ Cybersecurity Search Engine | Criminal IP - https://www.criminalip.io/
 Advanced threat prevention and detection | MetaDefender Cloud - https://metadefender.opswat.com
 
 Find and Lookup DNS Records | DNSdumpster - https://dnsdumpster.com/
+
+Phishing domain scanner | dnstwist - https://dnstwist.it/
+
+Join the fight against phishing | PhishTank - https://phishtank.org/
+
+Phishing Intelligence  | OpenPhish - https://www.openphish.com/
