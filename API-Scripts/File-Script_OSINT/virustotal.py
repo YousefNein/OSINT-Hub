@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from time import sleep
 
 load_dotenv()
+
 url = "https://www.virustotal.com/api/v3/"
 
 headers = {
@@ -17,7 +18,11 @@ headers = {
     'x-apikey': os.environ.get("VIRUS_TOTAL_API")
 }
 
-def fetch_data(file_location):
+def format_data(data):
+    formatted_data = json.dumps(data, indent=4, sort_keys=False)
+    return formatted_data
+
+def fetch_data_file(file_location):
     try:
         mime_type, _ = mimetypes.guess_type(file_location)
         if not mime_type:
@@ -42,14 +47,22 @@ def fetch_data(file_location):
         print(f"An error occurred: {e}")
         print(response.json())
 
+def filter_data(data):
+    if data is None:
+        return None
+    
+    filterd_data = {
+        
+    }
+
 def main():
     parser = argparse.ArgumentParser(description="Upload a file to VirusTotal.")
     parser.add_argument("-f", "--file", help="Path to the file to be uploaded.")
     
     args = parser.parse_args()
     if args.file:
-        data = fetch_data(args.file)
-        print(data)
+        data = fetch_data_file(args.file)
+        print(format_data(data))
     else:
         print("Please provide either a file path to upload or an analysis ID to fetch results.")
         sys.exit(1)

@@ -30,6 +30,7 @@ def filter_data(data):
 
     data = data.get("data", {})
     filtered_data = {
+        "Domain": domain,
         "Reports Count": data.get("count", 0),
         "Reports": [
             {
