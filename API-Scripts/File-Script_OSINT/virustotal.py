@@ -6,6 +6,7 @@ import argparse
 import sys
 import json
 import mimetypes
+import hashlib
 from dotenv import load_dotenv
 from time import sleep
 
@@ -47,22 +48,40 @@ def fetch_data_file(file_location):
         print(f"An error occurred: {e}")
         print(response.json())
 
+def fetch_data_file_hash(file_location):
+    hash_function = hashlib.new('sha256')
+    
+    with open(file_location, 'rb') as file:
+        while chunk := file.read(8192):
+            hash_function.update(chunk)
+    sha256_hash = hash_function.hexdigest()
+    print(sha256_hash)
+
 def filter_data(data):
     if data is None:
         return None
     
     filterd_data = {
-        
+
     }
 
 def main():
     parser = argparse.ArgumentParser(description="Upload a file to VirusTotal.")
     parser.add_argument("-f", "--file", help="Path to the file to be uploaded.")
+    parser.add_argument("-b", "--behavior", help="Retrieve all behavior data.", action="store_true")
+    parser.add_argument("-s", "--summary", help="Retrieve behavior summary data.", action="store_true")
     
     args = parser.parse_args()
     if args.file:
-        data = fetch_data_file(args.file)
-        print(format_data(data))
+        if args.behavior:
+            data = fetch_data_file_hash(args.file)
+            # print(format_data(data))
+        elif args.summary:
+            data = fetch_data_file(args.file, "/behaviour_summary")
+            print(format_data(data))
+        else:
+            data = fetch_data_file(args.file)
+            print(format_data(data))
     else:
         print("Please provide either a file path to upload or an analysis ID to fetch results.")
         sys.exit(1)
