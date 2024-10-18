@@ -9,6 +9,7 @@ import mimetypes
 import hashlib
 from dotenv import load_dotenv
 from time import sleep
+from datetime import datetime
 
 load_dotenv()
 
@@ -61,13 +62,28 @@ def filter_data(data):
     if data is None:
         return None
     
-    filterd_data = {
+    attributes = data.get("data", {}).get("attributes")
+    meta = data.get("meta", {})
+    date = attributes.get("date")
+    date = datetime.fromtimestamp(date).strftime('%Y-%m-%d')
 
+    filterd_data = {
+        "Hash": meta.get("file_info").get("sha256"),
+        "Last Analysis Date": date,
+        "Size": meta.get("file_info").get("size"),
+        "Harmless": attributes.get("stats", {}).get("harmless"),
+        "Malicious": attributes.get("stats", {}).get("malicious"),
+        "Suspicious": attributes.get("stats", {}).get("suspicious"),
+        "Timeout": attributes.get("stats", {}).get("timeout"),
+        "Undetected": attributes.get("stats", {}).get("undetected"),
     }
+
+    return filterd_data
 
 def main():
     parser = argparse.ArgumentParser(description="Upload a file to VirusTotal.")
     parser.add_argument("-f", "--file", help="Path to the file to be uploaded.")
+    parser.add_argument("--full", help="Retrieve the API full data.", action="store_true")
     parser.add_argument("-b", "--behavior", help="Retrieve all behavior data.", action="store_true")
     parser.add_argument("-s", "--summary", help="Retrieve behavior summary data.", action="store_true")
     
@@ -81,7 +97,10 @@ def main():
             print(format_data(data))
         else:
             data = fetch_data_file(args.file)
-            print(format_data(data))
+            if args.full:
+                print(format_data(data))
+            else:
+                print(format_data(filter_data(data)))
     else:
         print("Please provide either a file path to upload or an analysis ID to fetch results.")
         sys.exit(1)
