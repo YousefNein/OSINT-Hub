@@ -34,10 +34,7 @@ def fetch_data_file(file_location):
         response.raise_for_status()
         response = response.json()
         analysis_id = response.get("data", {}).get("id")
-        print(f"Analysing the URL with ID {analysis_id}...\n")
-        response = requests.get(f"{url}/analyses/{analysis_id}", headers=headers)
-        response.raise_for_status()
-        data = response.json()
+        print(f"Analysing the file with ID {analysis_id}...\n")
         while True:
             response = requests.get(f"{url}/analyses/{analysis_id}", headers=headers)
             response.raise_for_status()
