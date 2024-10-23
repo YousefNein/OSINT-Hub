@@ -77,7 +77,15 @@ def fetch_data_file(file_location):
         print(response.json())
 
 def fetch_data_ip(ip):
-    return
+    try:
+        response = requests.get(headers=headers, url=f"{url}ip_addresses/{ip}")
+        response.raise_for_status()
+        data = response.json()
+        return data
+    
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        print(response.json())
 
 def fetch_data_file_hash(file_location):
     hash_function = hashlib.new('sha256')
@@ -88,52 +96,87 @@ def fetch_data_file_hash(file_location):
     sha256_hash = hash_function.hexdigest()
     print(sha256_hash)
 
-def filter_data(data):
-    if data is None:
-        return None
+def filter_data(data, data_type):
     
     attributes = data.get("data", {}).get("attributes")
     meta = data.get("meta", {})
-    date = attributes.get("date")
-    date = datetime.fromtimestamp(date).strftime('%Y-%m-%d')
 
-    filterd_data = {
-        "Hash": meta.get("file_info").get("sha256"),
-        "Last Analysis Date": date,
-        "Size": meta.get("file_info").get("size"),
-        "Harmless": attributes.get("stats", {}).get("harmless"),
-        "Malicious": attributes.get("stats", {}).get("malicious"),
-        "Suspicious": attributes.get("stats", {}).get("suspicious"),
-        "Timeout": attributes.get("stats", {}).get("timeout"),
-        "Undetected": attributes.get("stats", {}).get("undetected"),
+    if data_type == 'file':
+        date = attributes.get("date")
+        date = datetime.fromtimestamp(date).strftime('%Y-%m-%d')
+
+        filtered_data = {
+            "hash": meta.get("file_info", {}).get("sha256"),
+            "last_analysis_date": date,
+            "size": meta.get("file_info", {}).get("size"),
+            "harmless": attributes.get("stats", {}).get("harmless"),
+            "malicious": attributes.get("stats", {}).get("malicious"),
+            "suspicious": attributes.get("stats", {}).get("suspicious"),
+            "timeout": attributes.get("stats", {}).get("timeout"),
+            "undetected": attributes.get("stats", {}).get("undetected"),
+        }
+    
+    elif data_type == 'ip':
+        last_analysis_stats = attributes.get("last_analysis_stats", {})
+        last_analysis_date = attributes.get("last_analysis_date")
+        if last_analysis_date is not None:
+            last_analysis_date = datetime.fromtimestamp(last_analysis_date).strftime('%Y-%m-%d') 
+        
+        filtered_data = {
+        "ip": data.get('data', {}).get('id'),
+        "asn": attributes.get("as_owner"),
+        "country": attributes.get("country"),
+        "network": attributes.get("network"),
+        "reputation": attributes.get("reputation"),
+        "last_analysis": last_analysis_date,
+        "harmless": last_analysis_stats.get("harmless", 0),
+        "malicious": last_analysis_stats.get("malicious", 0),
+        "suspicious": last_analysis_stats.get("suspicious", 0),
+        "undetected": last_analysis_stats.get("undetected", 0),
+        "timeout": last_analysis_stats.get("timeout", 0)
     }
+    
+    else:
+        return None
 
-    return filterd_data
+    return filtered_data
 
 def main():
     parser = argparse.ArgumentParser(description="Upload a file to VirusTotal.")
     parser.add_argument("-f", "--file", help="Path to the file to be uploaded.")
+    parser.add_argument("-ip", help="Query an IP address.")
     parser.add_argument("--full", help="Retrieve the API full data.", action="store_true")
     parser.add_argument("-b", "--behavior", help="Retrieve all behavior data.", action="store_true")
     parser.add_argument("-s", "--summary", help="Retrieve behavior summary data.", action="store_true")
     
     args = parser.parse_args()
-    if args.file:
-        if args.behavior:
-            data = fetch_data_file_hash(args.file)
-            # print(format_data(data))
-        elif args.summary:
-            data = fetch_data_file(args.file, "/behaviour_summary")
-            print(format_data(data))
-        else:
-            data = fetch_data_file(args.file)
+    try:
+        if args.file:
+            if args.behavior:
+                data = fetch_data_file_hash(args.file)
+            elif args.summary:
+                data = fetch_data_file(args.file, "/behaviour_summary")
+                print(format_data(data))
+            else:
+                data = fetch_data_file(args.file)
+                if args.full:
+                    print(format_data(data))
+                else:
+                    print(format_data(filter_data(data, 'file')))
+        elif args.ip:
+            data = fetch_data_ip(args.ip)
             if args.full:
                 print(format_data(data))
             else:
-                print(format_data(filter_data(data)))
-    else:
-        print("Please provide either a file path to upload or an analysis ID to fetch results.")
-        sys.exit(1)
+                print(format_data(filter_data(data, 'ip')))
+        else:
+            print("Please provide a valid flag.")
+            sys.exit(1)
+    except KeyboardInterrupt:
+        print("\nProcess interrupted by user.")
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     main()
