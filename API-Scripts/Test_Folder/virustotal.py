@@ -14,7 +14,7 @@ from datetime import datetime
 
 load_dotenv()
 
-url = "https://www.virustotal.com/api/v3/"
+base_url = "https://www.virustotal.com/api/v3/"
 
 headers = {
     "accept": "application/json",
@@ -60,13 +60,13 @@ def fetch_data_file(file_location):
         if not mime_type:
             mime_type = "application/octet-stream"
         files = { "file": (file_location, open(file_location, "rb"), mime_type) }
-        response = requests.post(f"{url}/files", headers=headers, files=files)
+        response = requests.post(f"{base_url}/files", headers=headers, files=files)
         response.raise_for_status()
         response = response.json()
         analysis_id = response.get("data", {}).get("id")
         print(f"Analysing the file with ID {analysis_id}...\n")
         while True:
-            response = requests.get(f"{url}/analyses/{analysis_id}", headers=headers)
+            response = requests.get(f"{base_url}/analyses/{analysis_id}", headers=headers)
             response.raise_for_status()
             data = response.json()
             if data.get("data", {}).get("attributes", {}).get("status") != "queued":
@@ -76,9 +76,38 @@ def fetch_data_file(file_location):
         print(f"An error occurred: {e}")
         print(response.json())
 
+def fetch_data_url(url):
+    try:
+        if is_valid_url(url):
+            payload = {"url": url}
+            response = requests.post(f"{base_url}urls", data=payload, headers=headers)
+            response.raise_for_status()
+            response = response.json()
+            analysis_id = response.get("data", {}).get("id")
+            print("Analysing the URL...\n")
+        else:
+            analysis_id = url
+        # if section == "behaviours":
+        #     analysis_id = analysis_id.replace("u-", "", 1)
+        #     response = requests.get(f"{url}urls/{analysis_id}/{section}", headers=headers)
+        #     response.raise_for_status()
+        #     data = response.json()
+        #     return data
+        # else:    
+            while True:
+                response = requests.get(f"{url}analyses/{analysis_id}", headers=headers)
+                response.raise_for_status()
+                data = response.json()
+                if data.get("data", {}).get("attributes", {}).get("status") != "queued":
+                    return data
+                sleep(5)
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        print(response.json())
+
 def fetch_data_ip(ip):
     try:
-        response = requests.get(headers=headers, url=f"{url}ip_addresses/{ip}")
+        response = requests.get(headers=headers, url=f"{base_url}ip_addresses/{ip}")
         response.raise_for_status()
         data = response.json()
         return data
@@ -142,9 +171,10 @@ def filter_data(data, data_type):
     return filtered_data
 
 def main():
-    parser = argparse.ArgumentParser(description="Upload a file to VirusTotal.")
-    parser.add_argument("-f", "--file", help="Path to the file to be uploaded.")
-    parser.add_argument("-ip", help="Query an IP address.")
+    parser = argparse.ArgumentParser(description="Use this tool to perform data analysis and queries through the API.")
+    parser.add_argument("-f", "--file", help="Path to the file for upload and analysis.")
+    parser.add_argument("--ip", help="IP address to retrieve information from the API.")
+    parser.add_argument("-u", "--url", help="URL to retrieve details from the API.")
     parser.add_argument("--full", help="Retrieve the API full data.", action="store_true")
     parser.add_argument("-b", "--behavior", help="Retrieve all behavior data.", action="store_true")
     parser.add_argument("-s", "--summary", help="Retrieve behavior summary data.", action="store_true")
@@ -169,6 +199,12 @@ def main():
                 print(format_data(data))
             else:
                 print(format_data(filter_data(data, 'ip')))
+        elif args.url:
+            data = fetch_data_url(args.url)
+            if args.full:
+                print(format_data(data))
+            else:
+                print(format_data(filter_data(data, 'url')))
         else:
             print("Please provide a valid flag.")
             sys.exit(1)
