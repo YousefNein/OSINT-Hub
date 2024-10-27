@@ -94,13 +94,13 @@ def fetch_data_url(url):
         #     data = response.json()
         #     return data
         # else:    
-            while True:
-                response = requests.get(f"{url}analyses/{analysis_id}", headers=headers)
-                response.raise_for_status()
-                data = response.json()
-                if data.get("data", {}).get("attributes", {}).get("status") != "queued":
-                    return data
-                sleep(5)
+        while True:
+            response = requests.get(f"{base_url}analyses/{analysis_id}", headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            if data.get("data", {}).get("attributes", {}).get("status") != "queued":
+                return data
+            sleep(5)
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
         print(response.json())
@@ -164,6 +164,24 @@ def filter_data(data, data_type):
         "undetected": last_analysis_stats.get("undetected", 0),
         "timeout": last_analysis_stats.get("timeout", 0)
     }
+    
+
+    elif data_type == "url":
+        attributes = data.get("data", {}).get("attributes", {})
+        date = attributes.get("date")
+        date = datetime.fromtimestamp(date).strftime('%Y-%m-%d')
+
+        filtered_data = {
+        "URL": data.get("meta", {}).get("url_info", {}).get("url"),
+        "URL-ID": data.get("data").get("id"),
+        "Date": date,
+        "Harmless": attributes.get("stats",{}).get("harmless", 0),
+        "Malicious": attributes.get("stats",{}).get("malicious", 0),
+        "Suspicious": attributes.get("stats",{}).get("suspicious", 0),
+        "Undetected": attributes.get("stats",{}).get("undetected", 0),
+        "Timeout": attributes.get("stats",{}).get("timeout", 0),
+        "File Info": data.get("meta", {}).get("file_info", {})
+        }
     
     else:
         return None
